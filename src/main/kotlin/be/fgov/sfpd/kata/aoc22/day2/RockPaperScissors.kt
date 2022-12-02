@@ -26,8 +26,8 @@ data class Round(val opponentShape: Shape, val playerShape: Shape) {
 
 private fun Shape.versus(opponent: Shape) =
         when (opponent) {
-            this.beats -> WIN
-            this.loosesTo -> LOSS
+            beats -> WIN
+            loosesTo -> LOSS
             else -> DRAW
         }
 
