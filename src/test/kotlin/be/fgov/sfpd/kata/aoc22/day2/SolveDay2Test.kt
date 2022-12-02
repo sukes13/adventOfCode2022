@@ -18,18 +18,18 @@ class SolveDay2Test {
         val input = readFile("day2/input.txt")
         assertThat(solve1(input)).isEqualTo(11475)
     }
-//
-//    @Test
-//    fun `example input part 2`() {
-//        val input = readFile("day2/exampleInput.txt")
-//        assertThat(solve2(input)).isEqualTo(45000)
-//    }
-//
-//    @Test
-//    fun `actual input part 2`() {
-//        val input = readFile("day2/input.txt")
-//        assertThat(solve2(input)).isEqualTo(203203)
-//    }
+
+    @Test
+    fun `example input part 2`() {
+        val input = readFile("day2/exampleInput.txt")
+        assertThat(solve2(input)).isEqualTo(12)
+    }
+
+    @Test
+    fun `actual input part 2`() {
+        val input = readFile("day2/input.txt")
+        assertThat(solve2(input)).isEqualTo(16862)
+    }
 
     private fun solve1(input: String): Int = solution1(input)
     private fun solve2(input: String): Int = solution2(input)

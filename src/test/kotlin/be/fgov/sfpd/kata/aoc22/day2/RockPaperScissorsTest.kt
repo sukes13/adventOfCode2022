@@ -6,6 +6,9 @@ import be.fgov.sfpd.kata.aoc22.day2.Shape.*
 import be.fgov.sfpd.kata.aoc22.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class RockPaperScissorsTest {
 
@@ -45,6 +48,30 @@ class RockPaperScissorsTest {
         assertThat(actual).isEqualTo(1)
     }
 
+    @Test
+    fun `example input line - to predicted roundd`() {
+        val input = "A Y"
+
+        val actual = input.toPredictedRound()
+
+        assertThat(actual).isEqualTo(Round(ROCK, ROCK))
+    }
+    @ParameterizedTest(name = "Input:  \"{0}\" has result = \"{1}\"")
+    @MethodSource("testRounds")
+    fun `example input line - to predicted round - score`(input: String, result: Int) {
+        val actual = input.toPredictedRound().score()
+
+        assertThat(actual).isEqualTo(result)
+    }
+
+    companion object {
+        @JvmStatic
+        fun testRounds() = listOf(
+                Arguments.of("A Y", 4),
+                Arguments.of("B X", 1),
+                Arguments.of("C Z", 7),
+        )
+    }
 }
 
 
