@@ -31,8 +31,8 @@ private fun Shape.versus(opponent: Shape) =
             else -> DRAW
         }
 
-private fun Shape.counterForResult(result: RPSResult) =
-        when (result) {
+private fun Shape.counterForResult(expectedResult: RPSResult) =
+        when (expectedResult) {
             WIN -> loosesTo
             DRAW -> this
             LOSS -> beats
@@ -43,12 +43,11 @@ enum class Shape(val opponentLetter: String, val playerLetter: String, val value
     PAPER("B", "Y", 2),
     SCISSORS("C", "Z", 3);
 
-    private val order get() = listOf(ROCK, PAPER, SCISSORS)
+    private val battleOrder get() = values()
 
-    val beats get() = order.getOrNull(order.indexOf(this) - 1) ?: order.last()
+    val beats get() = battleOrder.getOrNull(battleOrder.indexOf(this) - 1) ?: battleOrder.last()
 
-    val loosesTo get() = order.getOrNull(order.indexOf(this) + 1) ?: order.first()
-
+    val loosesTo get() = battleOrder.getOrNull(battleOrder.indexOf(this) + 1) ?: battleOrder.first()
 }
 
 enum class RPSResult(val letter: String, val score: Int) {
