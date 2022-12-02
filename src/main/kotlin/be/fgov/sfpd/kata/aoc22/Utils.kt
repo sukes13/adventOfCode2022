@@ -24,4 +24,4 @@ data class Point(val x: Int, val y: Int) {
     //@formatter:on
 
     operator fun plus(vector: Point) = Point(this.x + vector.x, this.y + vector.y)
-} 
+}
