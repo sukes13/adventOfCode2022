@@ -42,7 +42,6 @@ enum class Shape(val opponentLetter: String, val playerLetter: String, val value
     ROCK("A", "X", 1),
     PAPER("B", "Y", 2),
     SCISSORS("C", "Z", 3);
-
     private val battleCircle get() = values()
 
     val beats get() = battleCircle.before(this)
