@@ -25,3 +25,5 @@ data class Point(val x: Int, val y: Int) {
 
     operator fun plus(vector: Point) = Point(this.x + vector.x, this.y + vector.y)
 }
+
+fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
