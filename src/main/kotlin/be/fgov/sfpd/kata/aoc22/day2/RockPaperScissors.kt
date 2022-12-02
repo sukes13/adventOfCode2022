@@ -43,19 +43,12 @@ enum class Shape(val opponentLetter: String, val playerLetter: String, val value
     PAPER("B", "Y", 2),
     SCISSORS("C", "Z", 3);
 
-    val beats
-        get() = when (this) {
-            ROCK -> SCISSORS
-            PAPER -> ROCK
-            SCISSORS -> PAPER
-        }
+    private val order get() = listOf(ROCK, PAPER, SCISSORS)
 
-    val loosesTo
-        get() = when (this) {
-            ROCK -> PAPER
-            PAPER -> SCISSORS
-            SCISSORS -> ROCK
-        }
+    val beats get() = order.getOrNull(order.indexOf(this) - 1) ?: order.last()
+
+    val loosesTo get() = order.getOrNull(order.indexOf(this) + 1) ?: order.first()
+
 }
 
 enum class RPSResult(val letter: String, val score: Int) {
