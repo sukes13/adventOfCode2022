@@ -43,12 +43,12 @@ enum class Shape(val opponentLetter: String, val playerLetter: String, val value
     PAPER("B", "Y", 2),
     SCISSORS("C", "Z", 3);
 
-    private val battleOrder get() = values()
+    private val battleCircle get() = values()
 
-    val beats get() = battleOrder.getOrNull(battleOrder.indexOf(this) - 1) ?: battleOrder.last()
-
-    val loosesTo get() = battleOrder.getOrNull(battleOrder.indexOf(this) + 1) ?: battleOrder.first()
+    val beats get() = battleCircle.before(this)
+    val loosesTo get() = battleCircle.after(this)
 }
+
 
 enum class RPSResult(val letter: String, val score: Int) {
     WIN("Z", 6),
@@ -61,3 +61,6 @@ fun String.asRPSResult() = RPSResult.values().single { it.letter == this }
 fun String.asShape() = Shape.values().single { it.opponentLetter == this || it.playerLetter == this }
 
 fun String.splitOnSpace(): Pair<String, String> = this.trim().split(" ").zipWithNext().first()
+
+private fun <T> Array<T>.before(element: T) = this.getOrNull(this.indexOf(element) - 1) ?: this.last()
+private fun <T> Array<T>.after(element: T) = this.getOrNull(this.indexOf(element) + 1) ?: this.first()
