@@ -48,13 +48,11 @@ enum class Shape(val opponentLetter: String, val playerLetter: String, val value
     val loosesTo get() = battleCircle.after(this)
 }
 
-
 enum class RPSResult(val letter: String, val score: Int) {
     WIN("Z", 6),
     DRAW("Y", 3),
     LOSS("X", 0);
 }
-
 
 fun String.asRPSResult() = RPSResult.values().single { it.letter == this }
 fun String.asShape() = Shape.values().single { it.opponentLetter == this || it.playerLetter == this }
