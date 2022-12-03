@@ -12,7 +12,7 @@ class RucksackTest {
     @ParameterizedTest(name = "Rucksack:  \"{0}\" has \"{1}\" in both compartments")
     @MethodSource("testRucksacks")
     fun `test rucksacks - find the shared item`(input: String, result: String) {
-        val actual = input.splitInCompartments().sharedItem()
+        val actual = input.splitCompartments().sharedItem()
 
         assertThat(actual).isEqualTo(result)
     }

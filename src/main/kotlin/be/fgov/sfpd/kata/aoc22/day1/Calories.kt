@@ -4,18 +4,17 @@ import be.fgov.sfpd.kata.aoc22.mapLines
 import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
 
 fun solution1(input: String) =
-    input.caloriesPerElf()
-        .max()
+        input.caloriesPerElf()
+                .max()
 
 fun solution2(input: String) =
-    input.caloriesPerElf()
-        .sortedDescending()
-        .take(3)
-        .sum()
+        input.caloriesPerElf()
+                .sortedDescending()
+                .take(3)
+                .sum()
 
 fun String.caloriesPerElf() =
-    spitOnEmptyLine()
-        .map { perElf ->
+        spitOnEmptyLine().map { perElf ->
             perElf.mapLines { it.toInt() }.sumOf { it }
         }
 
