@@ -27,3 +27,4 @@ data class Point(val x: Int, val y: Int) {
 }
 
 fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
+fun String.toChar() = single()
