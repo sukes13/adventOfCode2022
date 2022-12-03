@@ -3,9 +3,9 @@ package be.fgov.sfpd.kata.aoc22.day2
 import be.fgov.sfpd.kata.aoc22.day2.RPSResult.*
 import be.fgov.sfpd.kata.aoc22.mapLines
 
-fun solution1(input: String) = input.mapLines { it.toRound() }.sumOf { it.score }
+fun part1(input: String) = input.mapLines { it.toRound() }.sumOf { it.score }
 
-fun solution2(input: String) = input.mapLines { it.toPredictedRound() }.sumOf { it.score }
+fun part2(input: String) = input.mapLines { it.toPredictedRound() }.sumOf { it.score }
 
 fun String.toRound() =
         splitOnSpace().let { (opponent, player) ->

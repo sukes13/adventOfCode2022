@@ -2,7 +2,6 @@ package be.fgov.sfpd.kata.aoc22.day1
 
 import be.fgov.sfpd.kata.aoc22.readFile
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class SolveTest {
@@ -31,7 +30,7 @@ class SolveTest {
         assertThat(solve2(input)).isEqualTo(203203)
     }
 
-    private fun solve1(input: String): Int = solution1(input)
-    private fun solve2(input: String): Int = solution2(input)
+    private fun solve1(input: String): Int = part1(input)
+    private fun solve2(input: String): Int = part2(input)
 
 }

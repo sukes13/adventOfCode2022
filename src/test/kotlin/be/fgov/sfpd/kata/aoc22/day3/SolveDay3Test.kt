@@ -30,7 +30,7 @@ class SolveDay3Test {
         assertThat(solve2(input)).isEqualTo(2752)
     }
 
-    private fun solve1(input: String): Int = solution1(input)
-    private fun solve2(input: String): Int = solution2(input)
+    private fun solve1(input: String): Int = part1(input)
+    private fun solve2(input: String): Int = part2(input)
 
 }

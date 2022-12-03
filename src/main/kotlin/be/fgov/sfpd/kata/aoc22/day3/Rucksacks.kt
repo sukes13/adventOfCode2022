@@ -4,9 +4,9 @@ import be.fgov.sfpd.kata.aoc22.day3.Priorities.priorityOf
 import be.fgov.sfpd.kata.aoc22.mapLines
 import be.fgov.sfpd.kata.aoc22.toChar
 
-fun solution1(input: String) = input.mapLines { it.splitCompartments().sharedItem() }.sumOf { priorityOf(it) }
+fun part1(input: String) = input.mapLines { it.splitCompartments().sharedItem() }.sumOf { priorityOf(it) }
 
-fun solution2(input: String) = input.splitGroups().sumOf { priorityOf(it.sharedItem()) }
+fun part2(input: String) = input.splitGroups().sumOf { priorityOf(it.sharedItem()) }
 
 fun List<String>.sharedItem(): String =
         fold(first().toList()) { shared, rucksack ->
