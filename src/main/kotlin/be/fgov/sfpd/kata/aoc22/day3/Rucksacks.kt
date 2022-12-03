@@ -1,24 +1,30 @@
 package be.fgov.sfpd.kata.aoc22.day3
 
+import be.fgov.sfpd.kata.aoc22.day3.Priorities.priorityOf
 import be.fgov.sfpd.kata.aoc22.mapLines
 import be.fgov.sfpd.kata.aoc22.toChar
 
 
-fun solution1(input: String) = input.mapLines { it.sharedItem() }.sumOf { Priorities.scoreFor(it) }
+fun solution1(input: String) = input.mapLines { it.splitInCompartments().sharedItem() }.sumOf { priorityOf(it) }
 
-fun solution2(input: String): Nothing = TODO()
+fun solution2(input: String) = input.splitGroups().sumOf { priorityOf(it.sharedItem()) }
 
-fun String.sharedItem() =
-        this.splitInTwo().let { (compartmentOne, compartmentTwo) ->
-            compartmentOne.chunked(1)
-                    .first { compartmentTwo.contains(it.toChar()) }
-        }
+fun List<String>.sharedItem(): String =
+        drop(1).fold(first().toList()) { shared, rucksack ->
+            shared.sharesWith(rucksack)
+        }.joinToString("")
+
+private fun List<Char>.sharesWith(rucksack: String) =
+        rucksack.chunked(1)
+                .map(String::toChar)
+                .filter { it in this }
+                .distinct()
 
 object Priorities {
     private val scores = (('a'..'z') + ('A'..'Z')).zip((1..52)).toMap()
 
-    fun scoreFor(item: String) = scores[item.toChar()] ?: 0
+    fun priorityOf(item: String) = scores[item.toChar()] ?: 0
 }
 
-private fun String.splitInTwo() = this.chunked(this.length / 2)
-
+fun String.splitInCompartments() = this.chunked(this.length / 2)
+fun String.splitGroups() = lines().chunked(3)

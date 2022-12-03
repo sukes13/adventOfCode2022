@@ -1,5 +1,8 @@
 package be.fgov.sfpd.kata.aoc22.day1
 
+import be.fgov.sfpd.kata.aoc22.mapLines
+import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
+
 fun solution1(input: String) =
     input.caloriesPerElf()
         .max()
@@ -11,8 +14,9 @@ fun solution2(input: String) =
         .sum()
 
 fun String.caloriesPerElf() =
-    this.split("\r\n\r\n")
+    spitOnEmptyLine()
         .map { perElf ->
-            perElf.lines()
-                .sumOf { it.toInt() }
+            perElf.mapLines { it.toInt() }.sumOf { it }
         }
+
+
