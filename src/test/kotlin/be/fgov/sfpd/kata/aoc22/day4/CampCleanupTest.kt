@@ -1,5 +1,6 @@
 package be.fgov.sfpd.kata.aoc22.day4
 
+import be.fgov.sfpd.kata.aoc22.overlap
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -48,7 +49,7 @@ class CampCleanupTest {
 
     @Test
     fun `test to sweeps`() {
-        assertThat("2-4,6-8".toSweeps()).containsExactly((2 .. 4).toSet() , (6 .. 8).toSet())
+        assertThat("2-4,6-8".toSweeps()).isEqualTo((2 .. 4).toSet() to (6 .. 8).toSet())
     }
 }
 

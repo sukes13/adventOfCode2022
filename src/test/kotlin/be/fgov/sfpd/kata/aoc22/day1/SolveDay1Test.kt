@@ -4,7 +4,7 @@ import be.fgov.sfpd.kata.aoc22.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class SolveTest {
+class SolveDay1Test {
 
     @Test
     fun `example input part 1`() {

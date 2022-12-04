@@ -5,11 +5,7 @@ import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
 
 fun part1(input: String) = input.caloriesPerElf().max()
 
-fun part2(input: String) =
-        input.caloriesPerElf()
-                .sortedDescending()
-                .take(3)
-                .sum()
+fun part2(input: String) = input.caloriesPerElf().sortedDescending().take(3).sum()
 
 fun String.caloriesPerElf() =
         spitOnEmptyLine().map { perElf ->
