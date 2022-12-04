@@ -37,5 +37,3 @@ fun <T> Iterable<Set<T>>.overlap(): Set<T> =
             shared intersect element.toSet()
         }
 
-fun String.toChar() = single()
-fun String.spitOnEmptyLine() = this.split("\r\n\r\n")
