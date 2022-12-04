@@ -30,7 +30,7 @@ fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
 fun String.filterLines(variant: (String) -> Boolean) = this.lines().filter(variant)
 
 /**
- *@receiver Returns set of all unique elements shared in all sets
+ *@receiver Returns set of all elements shared in all sets
  */
 fun <T> Iterable<Set<T>>.overlap(): Set<T> =
         fold(first().toSet()) { shared, element ->

@@ -11,7 +11,7 @@ class RucksackTest {
 
     @ParameterizedTest(name = "Rucksack:  \"{0}\" has \"{1}\" in both compartments")
     @MethodSource("testRucksacks")
-    fun `test rucksacks - find the shared item`(input: String, result: String) {
+    fun `test rucksacks - find the shared item`(input: String, result: Char) {
         val actual = input.splitCompartments().sharedItem()
 
         assertThat(actual).isEqualTo(result)
@@ -23,29 +23,29 @@ class RucksackTest {
 
         val groups = report.splitGroups()
 
-        assertThat(groups.first().sharedItem()).isEqualTo("r")
-        assertThat(groups.last().sharedItem()).isEqualTo("Z")
+        assertThat(groups.first().sharedItem()).isEqualTo('r')
+        assertThat(groups.last().sharedItem()).isEqualTo('Z')
     }
 
     companion object {
         @JvmStatic
         fun testRucksacks() = listOf(
-                Arguments.of("vJrwpWtwJgWrhcsFMMfFFhFp", "p"),
-                Arguments.of("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "L"),
-                Arguments.of("PmmdzqPrVvPwwTWBwg", "P"),
-                Arguments.of("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "v"),
-                Arguments.of("ttgJtRGJQctTZtZT", "t"),
-                Arguments.of("CrZsJsPPZsGzwwsLwLmpwMDw", "s"),
+                Arguments.of("vJrwpWtwJgWrhcsFMMfFFhFp", 'p'),
+                Arguments.of("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", 'L'),
+                Arguments.of("PmmdzqPrVvPwwTWBwg", 'P'),
+                Arguments.of("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", 'v'),
+                Arguments.of("ttgJtRGJQctTZtZT", 't'),
+                Arguments.of("CrZsJsPPZsGzwwsLwLmpwMDw", 's'),
         )
     }
 
     @Test
     fun `get some scores - check value`() {
-        assertThat(Priorities.priorityOf("a")).isEqualTo(1)
-        assertThat(Priorities.priorityOf("p")).isEqualTo(16)
-        assertThat(Priorities.priorityOf("L")).isEqualTo(38)
-        assertThat(Priorities.priorityOf("P")).isEqualTo(42)
-        assertThat(Priorities.priorityOf("t")).isEqualTo(20)
+        assertThat(Priorities.priorityOf('a')).isEqualTo(1)
+        assertThat(Priorities.priorityOf('p')).isEqualTo(16)
+        assertThat(Priorities.priorityOf('L')).isEqualTo(38)
+        assertThat(Priorities.priorityOf('P')).isEqualTo(42)
+        assertThat(Priorities.priorityOf('t')).isEqualTo(20)
     }
 }
 
