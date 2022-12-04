@@ -8,20 +8,20 @@ import org.junit.jupiter.params.provider.MethodSource
 
 class CampCleanupTest {
 
-    @ParameterizedTest(name = "Zones:  \"{0}\" have complete overlap at: \"{1}\"")
+    @ParameterizedTest(name = "Sweeps:  \"{0}\" overlap at: \"{1}\"")
+    @MethodSource("testOverlaps")
+    fun `test input - find overlap`(input: String, result: Set<Int>) {
+        val actual = input.toSweeps().overlap()
+
+        assertThat(actual).isEqualTo(result)
+    }
+
+    @ParameterizedTest(name = "Sweeps:  \"{0}\" has complete overlap count: \"{1}\"")
     @MethodSource("testCompleteOverlaps")
     fun `test input - count complete overlaps`(inputString: String, result: Int) {
         val input = part1(inputString)
 
         assertThat(input).isEqualTo(result)
-    }
-
-    @ParameterizedTest(name = "Zones:  \"{0}\" overlap at: \"{1}\"")
-    @MethodSource("testZones")
-    fun `test input - find overlap`(input: String, result: Set<Int>) {
-        val actual = input.toSweeps().overlap()
-
-        assertThat(actual).isEqualTo(result)
     }
 
     companion object {
@@ -36,7 +36,7 @@ class CampCleanupTest {
         )
 
         @JvmStatic
-        fun testZones() = listOf(
+        fun testOverlaps() = listOf(
                 Arguments.of("2-4,6-8", setOf<Int>()),
                 Arguments.of("2-3,4-5", setOf<Int>()),
                 Arguments.of("5-7,7-9", setOf(7)),
