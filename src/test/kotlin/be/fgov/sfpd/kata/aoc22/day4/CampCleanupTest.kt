@@ -49,7 +49,7 @@ class CampCleanupTest {
 
     @Test
     fun `test to sweeps`() {
-        assertThat("2-4,6-8".toSweeps()).isEqualTo((2 .. 4).toSet() to (6 .. 8).toSet())
+        assertThat("2-4,6-8".toSweeps()).containsExactly((2 .. 4).toSet() , (6 .. 8).toSet())
     }
 }
 

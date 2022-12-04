@@ -29,7 +29,13 @@ data class Point(val x: Int, val y: Int) {
 fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
 fun String.filterLines(variant: (String) -> Boolean) = this.lines().filter(variant)
 
-fun <T> Pair<Collection<T>,Collection<T>>.overlap() = first.toSet() intersect second.toSet()
+/**
+ *@receiver Returns set of all unique elements shared in all sets
+ */
+fun <T> Iterable<Set<T>>.overlap(): Set<T> =
+        fold(first().toSet()) { shared, element ->
+            shared intersect element.toSet()
+        }
 
 fun String.toChar() = single()
 fun String.spitOnEmptyLine() = this.split("\r\n\r\n")

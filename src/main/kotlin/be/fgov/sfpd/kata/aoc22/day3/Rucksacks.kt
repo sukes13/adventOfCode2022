@@ -9,10 +9,7 @@ fun part1(input: String) = input.mapLines { it.splitCompartments().sharedItem() 
 
 fun part2(input: String) = input.splitGroups().sumOf { priorityOf(it.sharedItem()) }
 
-fun List<String>.sharedItem(): String =
-        fold(first().toList()) { shared, rucksack ->
-            (shared to rucksack.toList()).overlap().toList()
-        }.joinToString("")
+fun List<String>.sharedItem(): String = this.map { it.toSet() }.overlap().joinToString("")
 
 object Priorities {
     private val scores = (('a'..'z') + ('A'..'Z')).zip(1..52).toMap()
