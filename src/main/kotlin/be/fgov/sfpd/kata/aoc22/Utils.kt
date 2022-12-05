@@ -29,6 +29,8 @@ data class Point(val x: Int, val y: Int) {
 fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
 fun String.filterLines(variant: (String) -> Boolean) = this.lines().filter(variant)
 
+fun String.spitOnEmptyLine() = this.split("\r\n\r\n")
+
 /**
  *@receiver Returns set of all elements shared in all sets
  */
