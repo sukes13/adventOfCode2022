@@ -20,7 +20,7 @@ class SupplyStacksTest {
     }
 
     @Test
-    fun `test toCrateMoves`() {
+    fun `test input toCrateMoves`() {
         val (_, moveInput) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
 
         val moves = listOf(CrateMove(1, 2, 1), CrateMove(3, 1, 3), CrateMove(2, 2, 1), CrateMove(1, 1, 2))
@@ -38,7 +38,7 @@ class SupplyStacksTest {
     @ParameterizedTest(name = "CrateMove:  \"{0}\" of cargo: \"{1}\" results in cargo: \"{2}\"")
     @MethodSource("testCargoMoves")
     fun `test move crate`(crateMove: CrateMove, startCargo: Cargo, expectedCargo: Cargo) {
-        val actual = startCargo.execute(crateMove) { it }
+        val actual = startCargo.execute(crateMove) { it.reversed() }
         assertThat(actual).isEqualTo(expectedCargo)
     }
 
@@ -59,7 +59,6 @@ class SupplyStacksTest {
                         mapOf(0 to listOf("C"), 1 to listOf("M"), 2 to listOf("Z", "N", "D", "P"))),
         )
     }
-
 }
 
 
