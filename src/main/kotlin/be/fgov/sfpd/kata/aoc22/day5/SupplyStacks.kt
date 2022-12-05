@@ -5,18 +5,17 @@ import be.fgov.sfpd.kata.aoc22.mapLines
 import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
 
 fun part1(input: String): String {
-    var cargo = input.spitOnEmptyLine().first().toCargo()
+    val startCargo = input.spitOnEmptyLine().first().toCargo()
     val moves = input.spitOnEmptyLine().last().toCrateMoves()
 
-    for (move in moves) cargo = cargo.execute(move)
-
-    return cargo.getTopCrates()
+    return moves.fold(startCargo){ cargo , move ->
+        cargo.execute(move)
+    }.getTopCrates()
 }
 
 fun part2(input: String): Nothing = TODO()
 
 typealias Cargo = Map<Int, List<String>>
-
 
 fun Cargo.execute(crateMove: CrateMove): Cargo {
     val movingCrates = this[crateMove.from - 1]?.take(crateMove.number) ?: listOf()
