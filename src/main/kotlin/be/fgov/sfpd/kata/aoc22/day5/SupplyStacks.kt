@@ -42,11 +42,12 @@ fun Cargo.getTopCrates() = toSortedMap().map { it.value.firstOrNull() ?: "" }.jo
 fun String.toCargo() =
         lines().dropLast(1)
                 .fold(mutableMapOf<Int, List<String>>()) { cargo, line ->
-                    line.chunked(4).map { it.replace("\\s|\\[|]".toRegex(), "") }
-                            .forEachIndexed { stack, crate ->
-                                if (crate.isNotBlank())
-                                    cargo[stack] = cargo[stack]?.plus(crate) ?: listOf(crate)
-                            }
+                    line.chunked(4)
+                        .map { it.replace("\\s|\\[|]".toRegex(), "") }
+                        .forEachIndexed { stack, crate ->
+                            if (crate.isNotBlank())
+                                cargo[stack] = cargo[stack]?.plus(crate) ?: listOf(crate)
+                        }
                     cargo
                 }.toMap()
 
