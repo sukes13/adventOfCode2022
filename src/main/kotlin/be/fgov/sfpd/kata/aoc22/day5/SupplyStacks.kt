@@ -45,8 +45,7 @@ fun String.toCargo() =
                     line.chunked(4)
                         .map { it.replace("\\s|\\[|]".toRegex(), "") }
                         .forEachIndexed { stack, crate ->
-                            if (crate.isNotBlank())
-                                cargo[stack] = cargo[stack]?.plus(crate) ?: listOf(crate)
+                            if (crate.isNotBlank()) cargo[stack] = cargo[stack]?.plus(crate) ?: listOf(crate)
                         }
                     cargo
                 }.toMap()
