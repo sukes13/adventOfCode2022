@@ -20,7 +20,7 @@ class SupplyStacksTest {
     }
 
     @Test
-    fun `test input parsing`() {
+    fun `test toCrateMoves`() {
         val (_, moveInput) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
 
         val moves = listOf(CrateMove(1, 2, 1), CrateMove(3, 1, 3), CrateMove(2, 2, 1), CrateMove(1, 1, 2))
@@ -29,23 +29,22 @@ class SupplyStacksTest {
     }
 
     @Test
-    fun `test move crate`() {
-        val ship = readFile("day5/exampleInput.txt").toShip()
-        val crateMove = CrateMove(1, 2, 1)
-        val expectedCargo = mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P"))
+    fun `test getTopCrates`() {
+        val cargo = mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P"))
 
-        assertThat(ship.execute(crateMove).cargo).isEqualTo(expectedCargo)
+        assertThat(cargo.getTopCrates()).isEqualTo("DCP")
     }
 
-    @ParameterizedTest(name = "Create:  \"{0}\" overlap at: \"{1}\"")
-    @MethodSource("testOverlaps")
+    @ParameterizedTest(name = "CrateMove:  \"{0}\" of cargo: \"{1}\" results in cargo: \"{2}\"")
+    @MethodSource("testCargoMoves")
     fun `test move crate`(crateMove: CrateMove, startCargo: Cargo, expectedCargo: Cargo) {
-        assertThat(Ship(startCargo).execute(crateMove).cargo).isEqualTo(expectedCargo)
+        val actual = startCargo.execute(crateMove)
+        assertThat(actual).isEqualTo(expectedCargo)
     }
 
     companion object {
         @JvmStatic
-        fun testOverlaps() = listOf(
+        fun testCargoMoves() = listOf(
                 Arguments.of(CrateMove(1, 2, 1),
                         mapOf(0 to listOf("N", "Z"), 1 to listOf("D", "C", "M"), 2 to listOf("P")),
                         mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P"))),

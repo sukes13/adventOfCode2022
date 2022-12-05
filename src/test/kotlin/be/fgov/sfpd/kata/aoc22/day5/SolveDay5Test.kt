@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Test
 
 class SolveDay5Test {
 
-//    @Test
-//    fun `example input part 1`() {
-//        val input = readFile("day5/exampleInput.txt")
-//        assertThat(solve1(input)).isEqualTo(2)
-//    }
-//
-//    @Test
-//    fun `actual input part 1`() {
-//        val input = readFile("day5/input.txt")
-//        assertThat(solve1(input)).isEqualTo(534)
-//    }
+    @Test
+    fun `example input part 1`() {
+        val input = readFile("day5/exampleInput.txt")
+        assertThat(solve1(input)).isEqualTo("CMZ")
+    }
+
+    @Test
+    fun `actual input part 1`() {
+        val input = readFile("day5/input.txt")
+        assertThat(solve1(input)).isEqualTo("JDTMRWCQJ")
+    }
 //
 //    @Test
 //    fun `example input part 2`() {
@@ -30,7 +30,7 @@ class SolveDay5Test {
 //        assertThat(solve2(input)).isEqualTo(841)
 //    }
 
-    private fun solve1(input: String): Int = part1(input)
-    private fun solve2(input: String): Int = part2(input)
+    private fun solve1(input: String) = part1(input)
+    private fun solve2(input: String): Nothing = part2(input)
 
 }
