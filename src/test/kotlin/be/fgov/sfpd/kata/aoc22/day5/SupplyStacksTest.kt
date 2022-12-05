@@ -38,7 +38,7 @@ class SupplyStacksTest {
     @ParameterizedTest(name = "CrateMove:  \"{0}\" of cargo: \"{1}\" results in cargo: \"{2}\"")
     @MethodSource("testCargoMoves")
     fun `test move crate`(crateMove: CrateMove, startCargo: Cargo, expectedCargo: Cargo) {
-        val actual = startCargo.execute(crateMove)
+        val actual = startCargo.execute(crateMove) { it }
         assertThat(actual).isEqualTo(expectedCargo)
     }
 
