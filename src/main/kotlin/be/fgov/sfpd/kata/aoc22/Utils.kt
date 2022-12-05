@@ -27,6 +27,8 @@ data class Point(val x: Int, val y: Int) {
 }
 
 fun <T> String.mapLines(variant: (String) -> T) = this.lines().map(variant)
+fun <T> String.flatMapLines(variant: (String) -> Iterable<T>) = this.lines().flatMap(variant)
+
 fun String.filterLines(variant: (String) -> Boolean) = this.lines().filter(variant)
 
 fun String.spitOnEmptyLine() = this.split("\r\n\r\n")

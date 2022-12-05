@@ -14,7 +14,7 @@ class SupplyStacksTest {
     fun `test input toCargo`() {
         val (cargoInput, _) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
 
-        val cargo = mapOf(0 to listOf("N","Z"),1 to listOf("D","C","M"),2 to listOf("P"))
+        val cargo = mapOf(0 to listOf("N", "Z"), 1 to listOf("D", "C", "M"), 2 to listOf("P"))
 
         assertThat(cargoInput.toCargo()).isEqualTo(cargo)
     }
@@ -23,26 +23,41 @@ class SupplyStacksTest {
     fun `test input parsing`() {
         val (_, moveInput) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
 
-        val moves = listOf(CrateMove(1,2,1),CrateMove(3,1,3),CrateMove(2,2,1),CrateMove(1,1,2))
+        val moves = listOf(CrateMove(1, 2, 1), CrateMove(3, 1, 3), CrateMove(2, 2, 1), CrateMove(1, 1, 2))
 
         assertThat(moveInput.toCrateMoves()).isEqualTo(moves)
     }
 
-    @ParameterizedTest(name = "Sweeps:  \"{0}\" overlap at: \"{1}\"")
+    @Test
+    fun `test move crate`() {
+        val ship = readFile("day5/exampleInput.txt").toShip()
+        val crateMove = CrateMove(1, 2, 1)
+        val expectedCargo = mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P"))
+
+        assertThat(ship.execute(crateMove).cargo).isEqualTo(expectedCargo)
+    }
+
+    @ParameterizedTest(name = "Create:  \"{0}\" overlap at: \"{1}\"")
     @MethodSource("testOverlaps")
-    fun `test input - find overlap`(input: String, result: Set<Int>) {
-        assertThat(true).isEqualTo(true)
+    fun `test move crate`(crateMove: CrateMove, startCargo: Cargo, expectedCargo: Cargo) {
+        assertThat(Ship(startCargo).execute(crateMove).cargo).isEqualTo(expectedCargo)
     }
 
     companion object {
         @JvmStatic
         fun testOverlaps() = listOf(
-                Arguments.of("2-4,6-8", setOf<Int>()),
-                Arguments.of("2-3,4-5", setOf<Int>()),
-                Arguments.of("5-7,7-9", setOf(7)),
-                Arguments.of("2-8,3-7", (3..7).toSet()),
-                Arguments.of("6-6,4-6", setOf(6)),
-                Arguments.of("2-6,4-8", (4..6).toSet()),
+                Arguments.of(CrateMove(1, 2, 1),
+                        mapOf(0 to listOf("N", "Z"), 1 to listOf("D", "C", "M"), 2 to listOf("P")),
+                        mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P"))),
+                Arguments.of(CrateMove(3, 1, 3),
+                        mapOf(0 to listOf("D", "N", "Z"), 1 to listOf("C", "M"), 2 to listOf("P")),
+                        mapOf(0 to listOf(), 1 to listOf("C", "M"), 2 to listOf("Z", "N", "D", "P"))),
+                Arguments.of(CrateMove(2, 2, 1),
+                        mapOf(0 to listOf(), 1 to listOf("C", "M"), 2 to listOf("Z", "N", "D", "P")),
+                        mapOf(0 to listOf("M", "C"), 1 to listOf(), 2 to listOf("Z", "N", "D", "P"))),
+                Arguments.of(CrateMove(1, 1, 2),
+                        mapOf(0 to listOf("M", "C"), 1 to listOf(), 2 to listOf("Z", "N", "D", "P")),
+                        mapOf(0 to listOf("C"), 1 to listOf("M"), 2 to listOf("Z", "N", "D", "P"))),
         )
     }
 
