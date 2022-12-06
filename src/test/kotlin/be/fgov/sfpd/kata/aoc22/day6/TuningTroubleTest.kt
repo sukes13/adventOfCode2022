@@ -7,10 +7,16 @@ import org.junit.jupiter.params.provider.MethodSource
 
 class TuningTroubleTest {
 
-    @ParameterizedTest(name = "CrateMove:  \"{0}\" of cargo: \"{1}\" results in cargo: \"{2}\"")
+    @ParameterizedTest(name = "Signal:  \"{0}\" has start-marker: \"{1}\"")
     @MethodSource("testSignals4")
-    fun `test find first marker`(signal: String, marker: Int) {
-        assertThat(signal.firstMaker(4)).isEqualTo(marker)
+    fun `test find first marker - markerLength = 4`(signal: String, marker: Int) {
+        assertThat(signal.firstMarker(4)).isEqualTo(marker)
+    }
+
+    @ParameterizedTest(name = "Signal:  \"{0}\" has start-marker: \"{1}\"")
+    @MethodSource("testSignals14")
+    fun `test find first marker - markerLength = 14`(signal: String, marker: Int) {
+        assertThat(signal.firstMarker(14)).isEqualTo(marker)
     }
 
     companion object {
