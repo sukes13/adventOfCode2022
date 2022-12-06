@@ -46,12 +46,9 @@ fun Cargo.visualize(): String {
     val highestStack = this.map { it.value.size }.max()
 
     return (highestStack downTo 1).fold("\n") { image, level ->
-        image + this.mapValues { (_, stack) ->
-            when (stack.getOrNull(level - 1)) {
-                null -> "    "
-                else -> "[${stack[stack.size - level]}] "
-            }
-        }.values.joinToString("") + "\n"
+        image + this.values.joinToString("") { stack ->
+            stack.getOrNull(level - 1)?.let { "[${stack[stack.size - level]}] " } ?: "    "
+        } + "\n"
     }.trimEnd()
 }
 
