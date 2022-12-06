@@ -59,7 +59,20 @@ class SupplyStacksTest {
                         mapOf(0 to listOf("C"), 1 to listOf("M"), 2 to listOf("Z", "N", "D", "P"))),
         )
     }
+
+    @Test
+    fun `test visualize cargo`() {
+        val cargo = mapOf(0 to listOf("N", "Z"), 1 to listOf("D", "C", "M"), 2 to listOf("P"))
+
+        assertThat(cargo.visualize().also { println(it) })
+                .isEqualTo("""
+    [D]     
+[N] [C]     
+[Z] [M] [P]
+""".trimEnd())
+    }
 }
+
 
 
 
