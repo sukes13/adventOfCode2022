@@ -6,7 +6,7 @@ fun part2(input: String) = input.firstMarker(14)
 
 
 fun String.firstMarker(markerLength: Int) =
-        this.windowed(markerLength, 1).toList()
+        this.windowed(markerLength, 1).asSequence()
             .mapIndexed { index, chunk ->
                 when (chunk.toList().distinct().size) {
                     markerLength -> index + markerLength
