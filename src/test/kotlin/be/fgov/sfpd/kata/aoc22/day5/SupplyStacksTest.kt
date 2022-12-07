@@ -1,7 +1,7 @@
 package be.fgov.sfpd.kata.aoc22.day5
 
 import be.fgov.sfpd.kata.aoc22.readFile
-import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
+import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -12,7 +12,7 @@ class SupplyStacksTest {
 
     @Test
     fun `test input toCargo`() {
-        val (cargoInput, _) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
+        val (cargoInput, _) = readFile("day5/exampleInput.txt").splitOnEmptyLine()
 
         val cargo = mapOf(0 to listOf("N", "Z"), 1 to listOf("D", "C", "M"), 2 to listOf("P"))
 
@@ -21,7 +21,7 @@ class SupplyStacksTest {
 
     @Test
     fun `test input toCrateMoves`() {
-        val (_, moveInput) = readFile("day5/exampleInput.txt").spitOnEmptyLine()
+        val (_, moveInput) = readFile("day5/exampleInput.txt").splitOnEmptyLine()
 
         val moves = listOf(CrateMove(1, 2, 1), CrateMove(3, 1, 3), CrateMove(2, 2, 1), CrateMove(1, 1, 2))
 

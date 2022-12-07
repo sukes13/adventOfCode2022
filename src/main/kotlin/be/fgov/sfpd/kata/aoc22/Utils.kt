@@ -31,7 +31,7 @@ fun <T> String.flatMapLines(variant: (String) -> Iterable<T>) = this.lines().fla
 
 fun String.filterLines(variant: (String) -> Boolean) = this.lines().filter(variant)
 
-fun String.spitOnEmptyLine() = this.split("\r\n\r\n")
+fun String.splitOnEmptyLine() = this.split("\r\n\r\n")
 
 /**
  *@receiver Returns set of all elements shared in all sets

@@ -1,19 +1,19 @@
 package be.fgov.sfpd.kata.aoc22.day5
 
 import be.fgov.sfpd.kata.aoc22.flatMapLines
-import be.fgov.sfpd.kata.aoc22.spitOnEmptyLine
+import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 
 typealias Cargo = Map<Int, List<String>>
 
 data class CrateMove(val number: Int, val from: Int, val to: Int)
 
 fun part1(input: String) =
-        input.spitOnEmptyLine().let { (startCargo, moves) ->
+        input.splitOnEmptyLine().let { (startCargo, moves) ->
             startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it.reversed() }).getTopCrates()
         }
 
 fun part2(input: String) =
-        input.spitOnEmptyLine().let { (startCargo, moves) ->
+        input.splitOnEmptyLine().let { (startCargo, moves) ->
             startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it }).getTopCrates()
         }
 
