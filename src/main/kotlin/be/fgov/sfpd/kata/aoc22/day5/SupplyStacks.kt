@@ -7,17 +7,15 @@ typealias Cargo = Map<Int, List<String>>
 
 data class CrateMove(val number: Int, val from: Int, val to: Int)
 
-fun part1(input: String): String {
-    val (startCargo, moves) = input.spitOnEmptyLine()
+fun part1(input: String) =
+        input.spitOnEmptyLine().let { (startCargo, moves) ->
+            startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it.reversed() }).getTopCrates()
+        }
 
-    return startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it.reversed() }).getTopCrates()
-}
-
-fun part2(input: String): String {
-    val (startCargo, moves) = input.spitOnEmptyLine()
-
-    return startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it }).getTopCrates()
-}
+fun part2(input: String) =
+        input.spitOnEmptyLine().let { (startCargo, moves) ->
+            startCargo.toCargo().executeMoves(moves.toCrateMoves(), craneOrder = { it }).getTopCrates()
+        }
 
 private fun Cargo.executeMoves(moves: List<CrateMove>, craneOrder: (List<String>) -> List<String>): Cargo {
     println("Starting cargo: ${this.visualize()} \n")
