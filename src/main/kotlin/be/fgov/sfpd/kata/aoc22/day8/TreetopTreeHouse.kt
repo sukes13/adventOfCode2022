@@ -27,11 +27,12 @@ fun Grid<Int>.linesOfSightOf(point: Point): LineOfSightMap {
     val resultMap = mutableMapOf<ViewDirection, LineOfSight>()
     ViewDirection.values().forEach { viewDirection ->
         val column = this.column(point.x)
+        val row = row(point.y)
         when (viewDirection) {
             TOP -> resultMap[TOP] = column.lookBackwardFrom(point.y)
-            RIGHT -> resultMap[RIGHT] = row(point.y).lookForwardFrom(point.x)
+            RIGHT -> resultMap[RIGHT] = row.lookForwardFrom(point.x)
             BOTTOM -> resultMap[BOTTOM] = column.lookForwardFrom(point.y)
-            LEFT -> resultMap[LEFT] = row(point.y).lookBackwardFrom(point.x)
+            LEFT -> resultMap[LEFT] = row.lookBackwardFrom(point.x)
         }
     }
     return resultMap.toMap()
