@@ -25,7 +25,7 @@ val scenicScoreChecker: (Point, Grid<Int>) -> Int = { tree, grid ->
 
 fun Grid<Int>.linesOfSightOf(point: Point): LineOfSightMap {
     val resultMap = mutableMapOf<ViewDirection, LineOfSight>()
-    val column = this.column(point.x)
+    val column = column(point.x)
     val row = row(point.y)
     ViewDirection.values().forEach { viewDirection ->
         when (viewDirection) {
