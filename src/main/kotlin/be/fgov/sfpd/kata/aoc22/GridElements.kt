@@ -11,8 +11,8 @@ fun <T, V> Grid<T>.checkEveryPointFor(checker: (Point, Grid<T>) -> V?) =
         }
 
 fun <T> Grid<T>.get(point: Point) : T = this[point.y]?.get(point.x) ?: error("Point: $point does not exist in grid")
-fun <T> Grid<T>.column(number: Int) = values.map { it.elementAtOrNull(number) ?: error("Column: $it does not exist in grid") }
-fun <T> Grid<T>.row(number: Int) = this[number] ?: error("Row: $number does not exist in grid")
+fun <T> Grid<T>.column(point: Point) = values.map { it.elementAtOrNull(point.x) ?: error("Column: $it does not exist in grid") }
+fun <T> Grid<T>.row(point: Point) = this[point.y] ?: error("Row: $point.x does not exist in grid")
 
 data class Point(val x: Int, val y: Int) {
     //@formatter:off
