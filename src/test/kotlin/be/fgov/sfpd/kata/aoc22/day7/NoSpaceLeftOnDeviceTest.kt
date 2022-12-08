@@ -9,6 +9,17 @@ import org.junit.jupiter.api.Test
 class NoSpaceLeftOnDeviceTest {
 
     @Test
+    fun `browse ListCommand`() {
+        val input = readFile("day7/exampleInput.txt")
+        val actual = DeviceFileSystem()
+
+        actual.browse(input.toFSCommands())
+
+        assertThat(actual.totalSize()).isEqualTo(48381165)
+    }
+
+
+    @Test
     fun `parse to commands`() {
         val input = readFile("day7/exampleInput.txt")
 
