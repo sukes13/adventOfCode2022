@@ -40,8 +40,7 @@ class DeviceFileSystem {
     private fun goTo(target: String): FSDirectory =
             when (target) {
                 ".." -> currentDir.parent ?: error("cannot go past root")
-                else -> currentDir.children.find { it.name == target } as? FSDirectory
-                        ?: error(" $target is not a directory")
+                else -> currentDir.children.find { it.name == target } as? FSDirectory ?: error(" $target is not a directory")
             }
 
     private fun String.toChildren(parent: FSDirectory): FSElement =
