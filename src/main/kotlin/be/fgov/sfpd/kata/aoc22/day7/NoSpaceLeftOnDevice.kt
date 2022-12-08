@@ -57,12 +57,10 @@ sealed class FSElement(val name: String, val parent: FSDirectory?) {
     class FSDirectory(name: String, parent: FSDirectory?, val children: MutableList<FSElement> = mutableListOf()) : FSElement(name, parent) {
         override fun totalSize() = children.sumOf { it.totalSize() }
 
-        fun allDirectorySizes() = this.allDirectories().map { it.totalSize() }
-
-        private fun allDirectories(): List<FSDirectory> {
-            val allChildren = children.filterIsInstance<FSDirectory>().flatMap { it.allDirectories() }
-            return if (name == "/") allChildren else allChildren + this
-        }
+        fun allDirectorySizes(): List<Int> =
+                children.filterIsInstance<FSDirectory>()
+                        .flatMap { it.allDirectorySizes() }
+                        .let { dirSize -> dirSize + this.totalSize() }
     }
 
     class FSFile(name: String, parent: FSDirectory, val size: Int) : FSElement(name, parent) {
@@ -85,5 +83,6 @@ fun String.toFSCommands(): List<FSCommand> {
         }
     }.drop(1)
 }
+
 private fun List<String>.readUntilNextCommandFrom(index: Int) = drop(index + 1).takeWhile { !it.contains('$') }
 
