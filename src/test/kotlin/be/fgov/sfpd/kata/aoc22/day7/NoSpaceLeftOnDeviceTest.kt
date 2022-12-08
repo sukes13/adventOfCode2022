@@ -11,11 +11,10 @@ class NoSpaceLeftOnDeviceTest {
     @Test
     fun `browse ListCommand`() {
         val input = readFile("day7/exampleInput.txt")
-        val actual = DeviceFileSystem()
 
-        actual.browse(input.toFSCommands())
+        val actual = DeviceFileSystem().browse(input.toFSCommands())
 
-        assertThat(actual.totalSize()).isEqualTo(48381165)
+        assertThat(actual.rootDirectory.totalSize()).isEqualTo(48381165)
     }
 
 
@@ -24,8 +23,7 @@ class NoSpaceLeftOnDeviceTest {
         val input = readFile("day7/exampleInput.txt")
 
         assertThat(input.toFSCommands()).isEqualTo(
-                listOf(ChangeDirCommand("/"),
-                        ListCommand(listOf("dir a", "14848514 b.txt", "8504156 c.dat", "dir d")),
+                listOf(ListCommand(listOf("dir a", "14848514 b.txt", "8504156 c.dat", "dir d")),
                         ChangeDirCommand("a"),
                         ListCommand(listOf("dir e", "29116 f", "2557 g", "62596 h.lst")),
                         ChangeDirCommand("e"),

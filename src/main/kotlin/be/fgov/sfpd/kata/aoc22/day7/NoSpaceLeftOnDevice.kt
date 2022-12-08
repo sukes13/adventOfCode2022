@@ -7,12 +7,19 @@ import be.fgov.sfpd.kata.aoc22.day7.FSElement.FSFile
 
 fun part1(input: String) =
         input.toFSCommands().let { commands ->
-            DeviceFileSystem().browse(commands)
-                    .rootDirectory
-                    .allDirectories()
-                    .filter { it.totalSize() <= 100000 }
-                    .sumOf { it.totalSize() }
+            DeviceFileSystem().browse(commands).rootDirectory
+                    .allDirectorySizes().filter { it <= 100000 }.sum()
         }
+
+fun part2(input: String): Int {
+    val rootDirectory = input.toFSCommands().let { DeviceFileSystem().browse(it).rootDirectory }
+    val emptySpace = 70000000 - rootDirectory.totalSize()
+    val spaceToFind = 30000000 - emptySpace
+
+    return if (spaceToFind > 0) {
+        rootDirectory.allDirectorySizes().filter { it >= spaceToFind }.min()
+    } else 0
+}
 
 class DeviceFileSystem {
     private var currentDir = FSDirectory(name = "/", null)
@@ -22,17 +29,13 @@ class DeviceFileSystem {
         commands.forEach { command ->
             when (command) {
                 is ChangeDirCommand -> currentDir = goTo(command.target)
-                is ListCommand -> {
-                    for (element in command.elements) {
-                        currentDir.children.add(element.toChildren(parent = currentDir))
-                    }
+                is ListCommand -> command.elements.forEach {
+                    currentDir.children += it.toChildren(parent = currentDir)
                 }
             }
         }
         return this
     }
-
-    fun totalSize() = rootDirectory.children.sumOf { it.totalSize() }
 
     private fun goTo(target: String): FSDirectory =
             when (target) {
@@ -55,13 +58,15 @@ sealed class FSElement(val name: String, val parent: FSDirectory?) {
     class FSDirectory(name: String, parent: FSDirectory?, val children: MutableList<FSElement> = mutableListOf()) : FSElement(name, parent) {
         override fun totalSize() = children.sumOf { it.totalSize() }
 
-        fun allDirectories(): List<FSDirectory> {
+        fun allDirectorySizes() = this.allDirectories().map { it.totalSize() }
+
+        private fun allDirectories(): List<FSDirectory> {
             val allChildren = children.filterIsInstance<FSDirectory>().flatMap { it.allDirectories() }
-            return if (name != "/") allChildren + this else allChildren
+            return if (name == "/") allChildren else allChildren + this
         }
     }
 
-    class FSFile(name: String, parent: FSDirectory?, val size: Int) : FSElement(name, parent) {
+    class FSFile(name: String, parent: FSDirectory, val size: Int) : FSElement(name, parent) {
         override fun totalSize() = size
     }
 }
@@ -81,5 +86,5 @@ fun String.toFSCommands(): List<FSCommand> {
         }
     }.drop(1)
 }
-
 private fun List<String>.readUntilNextCommandFrom(index: Int) = drop(index + 1).takeWhile { !it.contains('$') }
+
