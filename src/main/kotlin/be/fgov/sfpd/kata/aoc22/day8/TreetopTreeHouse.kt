@@ -1,28 +1,29 @@
 package be.fgov.sfpd.kata.aoc22.day8
 
-import be.fgov.sfpd.kata.aoc22.Point
+import be.fgov.sfpd.kata.aoc22.*
 import be.fgov.sfpd.kata.aoc22.day8.ViewDirection.*
 
-fun part1(input: String) = input.toTreetopGrid().checkEveryTreeFor(isVisibleFromOutsideChecker).filter { it }.size
+fun part1(input: String) = input.toTreetopGrid().checkEveryPointFor(isVisibleFromOutsideChecker).filter { it }.size
 
-fun part2(input: String) = input.toTreetopGrid().checkEveryTreeFor(scenicScoreChecker).max()
+fun part2(input: String) = input.toTreetopGrid().checkEveryPointFor(scenicScoreChecker).max()
 
-val isVisibleFromOutsideChecker: (Point, TreetopGrid) -> Boolean = { point, grid ->
-    val treeHeight = grid.heightAt(point)
-    grid.linesOfSightOf(point).map { (direction, lineOfSight) ->
-        lineOfSight.lowerTreesUntil(treeHeight) == point.distanceToEdge(direction, grid.size)
+val isVisibleFromOutsideChecker: (Point, Grid<Int>) -> Boolean = { tree, grid ->
+    val treeHeight = grid.get(tree)
+    grid.linesOfSightOf(tree).map { (direction, lineOfSight) ->
+        lineOfSight.lowerTreesUntil(treeHeight) == tree.distanceToEdge(direction, grid.size)
     }.any { it }
 }
-val scenicScoreChecker: (Point, TreetopGrid) -> Int = { point, grid ->
-    val treeHeight = grid.heightAt(point)
-    grid.linesOfSightOf(point).map { (direction, lineOfSight) ->
+
+val scenicScoreChecker: (Point, Grid<Int>) -> Int = { tree, grid ->
+    val treeHeight = grid.get(tree)
+    grid.linesOfSightOf(tree).map { (direction, lineOfSight) ->
         lineOfSight.lowerTreesUntil(treeHeight).let {
-            if (it == point.distanceToEdge(direction, grid.size)) it else it + 1
+            if (it == tree.distanceToEdge(direction, grid.size)) it else it + 1
         }
     }.reduce { a, b -> a * b }
 }
 
-fun TreetopGrid.linesOfSightOf(point: Point): LineOfSightMap {
+fun Grid<Int>.linesOfSightOf(point: Point): LineOfSightMap {
     val resultMap = mutableMapOf<ViewDirection, LineOfSight>()
     ViewDirection.values().forEach { viewDirection ->
         val row = this.row(point.x)
@@ -39,16 +40,6 @@ fun TreetopGrid.linesOfSightOf(point: Point): LineOfSightMap {
 private fun LineOfSight.lookForwardFrom(target: Int) = this.drop(target + 1)
 private fun LineOfSight.lookBackwardFrom(target: Int) = reversed().takeLast(target)
 private fun LineOfSight.lowerTreesUntil(treeHeight: Int) = takeWhile { it < treeHeight }.size
-
-private fun <T> TreetopGrid.checkEveryTreeFor(checker: (Point, TreetopGrid) -> T?) =
-        (0 until this.size).flatMap { x ->
-            (0 until this.size).mapNotNull { y ->
-                checker(Point(x, y), this)
-            }
-        }
-private fun TreetopGrid.heightAt(point: Point) = this[point.y]?.get(point.x) ?: error("Point: $point does not exist in grid")
-private fun TreetopGrid.row(rowNumber: Int) = values.map { it.elementAt(rowNumber) }
-private fun TreetopGrid.column(point: Point) = this[point.y] ?: error("Row: ${point.x} does not exist in grid")
 
 fun Point.distanceToEdge(viewDirection: ViewDirection, gridSize: Int) =
         when (viewDirection) {
@@ -67,5 +58,4 @@ enum class ViewDirection {
     TOP, RIGHT, BOTTOM, LEFT
 }
 typealias LineOfSight = List<Int>
-typealias TreetopGrid = Map<Int, LineOfSight>
 typealias LineOfSightMap = Map<ViewDirection, LineOfSight>
