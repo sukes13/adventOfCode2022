@@ -1,13 +1,13 @@
 package be.fgov.sfpd.kata.aoc22.day8
 
+import be.fgov.sfpd.kata.aoc22.Direction
 import be.fgov.sfpd.kata.aoc22.Point
-import be.fgov.sfpd.kata.aoc22.day8.ViewDirection.*
 import be.fgov.sfpd.kata.aoc22.readFile
+import be.fgov.sfpd.kata.aoc22.Direction.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-
 
 class TreetopTreeHouseTest {
 
@@ -20,7 +20,7 @@ class TreetopTreeHouseTest {
 
     @ParameterizedTest(name = "Tree at:  \"{0}\" has scene score of: \"{1}\"")
     @MethodSource("testDistanceToEdge")
-    fun `test distanceToEdge`(point: Point, direction: ViewDirection, score: Int) {
+    fun `test distanceToEdge`(point: Point, direction: Direction, score: Int) {
         val treetopGrid = readFile("day8/exampleInput.txt").toTreetopGrid()
         assertThat(point.distanceToEdge(direction, treetopGrid.size)).isEqualTo(score)
     }
@@ -45,34 +45,34 @@ class TreetopTreeHouseTest {
                 Arguments.of(Point(3, 4), mapOf(
                         RIGHT to listOf(0),
                         LEFT to listOf(3, 5, 3),
-                        TOP to listOf(4, 3, 1, 7),
-                        BOTTOM to emptyList(),
+                        UP to listOf(4, 3, 1, 7),
+                        DOWN to emptyList(),
                 )),
                 Arguments.of(Point(2, 2), mapOf(
                         RIGHT to listOf(3, 2),
                         LEFT to listOf(5, 6),
-                        TOP to listOf(5, 3),
-                        BOTTOM to listOf(5, 3),
+                        UP to listOf(5, 3),
+                        DOWN to listOf(5, 3),
                 )),
                 Arguments.of(Point(2, 1), mapOf(
                         RIGHT to listOf(1, 2),
                         LEFT to listOf(5, 2),
-                        TOP to listOf(3),
-                        BOTTOM to listOf(3, 5, 3),
+                        UP to listOf(3),
+                        DOWN to listOf(3, 5, 3),
                 )),
                 Arguments.of(Point(0, 0), mapOf(
                         RIGHT to listOf(0, 3, 7, 3),
                         LEFT to listOf(),
-                        TOP to listOf(),
-                        BOTTOM to listOf(2, 6, 3, 3),
+                        UP to listOf(),
+                        DOWN to listOf(2, 6, 3, 3),
                 )),
         )
 
         @JvmStatic
         fun testDistanceToEdge() = listOf(
-                Arguments.of(Point(2, 1), TOP, 1),
+                Arguments.of(Point(2, 1), UP, 1),
                 Arguments.of(Point(2, 1), RIGHT, 2),
-                Arguments.of(Point(2, 1), BOTTOM, 3),
+                Arguments.of(Point(2, 1), DOWN, 3),
                 Arguments.of(Point(2, 1), LEFT, 2),
         )
 

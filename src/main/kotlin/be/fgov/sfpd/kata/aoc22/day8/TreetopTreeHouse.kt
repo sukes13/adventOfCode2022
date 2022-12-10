@@ -1,7 +1,7 @@
 package be.fgov.sfpd.kata.aoc22.day8
 
 import be.fgov.sfpd.kata.aoc22.*
-import be.fgov.sfpd.kata.aoc22.day8.ViewDirection.*
+import be.fgov.sfpd.kata.aoc22.Direction.*
 
 fun part1(input: String) = input.toTreetopGrid().checkEveryPointFor(isVisibleFromOutsideChecker).filter { it }.size
 
@@ -24,14 +24,14 @@ val scenicScoreChecker: (Point, Grid<Int>) -> Int = { tree, grid ->
 }
 
 fun Grid<Int>.linesOfSightOf(point: Point): LineOfSightMap {
-    val resultMap = mutableMapOf<ViewDirection, LineOfSight>()
+    val resultMap = mutableMapOf<Direction, LineOfSight>()
     val column = column(point)
     val row = row(point)
-    ViewDirection.values().forEach { viewDirection ->
+    Direction.values().forEach { viewDirection ->
         when (viewDirection) {
-            TOP -> resultMap[TOP] = column.lookBackwardFrom(point.y)
+            UP -> resultMap[UP] = column.lookBackwardFrom(point.y)
             RIGHT -> resultMap[RIGHT] = row.lookForwardFrom(point.x)
-            BOTTOM -> resultMap[BOTTOM] = column.lookForwardFrom(point.y)
+            DOWN -> resultMap[DOWN] = column.lookForwardFrom(point.y)
             LEFT -> resultMap[LEFT] = row.lookBackwardFrom(point.x)
         }
     }
@@ -42,11 +42,11 @@ private fun LineOfSight.lookForwardFrom(target: Int) = this.drop(target + 1)
 private fun LineOfSight.lookBackwardFrom(target: Int) = reversed().takeLast(target)
 private fun LineOfSight.lowerTreesUntil(treeHeight: Int) = takeWhile { it < treeHeight }.size
 
-fun Point.distanceToEdge(viewDirection: ViewDirection, gridSize: Int) =
+fun Point.distanceToEdge(viewDirection: Direction, gridSize: Int) =
         when (viewDirection) {
-            TOP -> y
+            UP -> y
             RIGHT -> gridSize - x - 1
-            BOTTOM -> gridSize - y - 1
+            DOWN -> gridSize - y - 1
             LEFT -> x
         }
 
@@ -55,8 +55,6 @@ fun String.toTreetopGrid() =
             index to line.toList().map { it.digitToInt() }
         }.toMap()
 
-enum class ViewDirection {
-    TOP, RIGHT, BOTTOM, LEFT
-}
+
 typealias LineOfSight = List<Int>
-typealias LineOfSightMap = Map<ViewDirection, LineOfSight>
+typealias LineOfSightMap = Map<Direction, LineOfSight>
