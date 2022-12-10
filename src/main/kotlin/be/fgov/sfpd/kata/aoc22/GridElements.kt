@@ -50,6 +50,11 @@ data class Point(val x: Int, val y: Int) {
 
 }
 
+infix fun Point.onSameRowAs(head: Point) = y == head.y
+infix fun Point.onSameColumnAs(head: Point) = x == head.x
+infix fun Point.leftOf(head: Point) = x > head.x
+infix fun Point.lowerThan(head: Point) = y > head.y
+
 fun List<Point>.visualize(gridWidth: Int, gridHeight: Int): String =
         (gridHeight downTo -gridHeight).map { y ->
             (-gridWidth until gridWidth).mapNotNull { x ->

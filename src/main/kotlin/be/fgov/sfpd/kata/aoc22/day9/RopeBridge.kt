@@ -3,10 +3,9 @@ package be.fgov.sfpd.kata.aoc22.day9
 import be.fgov.sfpd.kata.aoc22.*
 import be.fgov.sfpd.kata.aoc22.Direction.*
 
-private val ropeOfTen = Rope(MutableList(10) { Point(0, 0) }.toList())
-
 fun part1(input: String) = Rope().executeMoves(input.toRopeMoves()).countUniqueTails()
 
+private val ropeOfTen = Rope(MutableList(10) { Point(0, 0) }.toList())
 fun part2(input: String) = ropeOfTen.executeMoves(input.toRopeMoves()).countUniqueTails()
 
 private fun List<Rope>.countUniqueTails() = map { it.tail }.also { println(it.visualize(30, 30)) }.distinct().count()
@@ -15,16 +14,15 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
     val tail: Point get() = knots.last()
 
     fun executeMoves(moves: List<RopeMove>) =
-            moves.fold(mutableListOf(this)) { ropes, move ->
-                ropes += ropes.last().allStepsOf(move)
-                ropes
-//                        .also { println("\n$move\n" + ropes.last().visualize(30, 10)) }
+            moves.fold(mutableListOf(this)) { allStepsExecuted, move ->
+                allStepsExecuted += allStepsExecuted.last().allStepsOf(move)
+                allStepsExecuted
+//                        .also { println("\n$move\n" + allStepsExecuted.last().visualize(30, 10)) }
             }.toList()
 
     private fun allStepsOf(move: RopeMove) =
             (0 until move.distance).fold(mutableListOf(this)) { allRopes, _ ->
-                val movingRope = allRopes.last().knots.toMutableList()
-                movingRope.moveHead(move)
+                val movingRope = allRopes.last().knots.toMutableList().moveHead(move)
 
                 (1 until movingRope.size).forEach { index ->
                     val previousKnot = movingRope[index - 1]
@@ -39,9 +37,17 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
                 allRopes
             }.toList()
 
-    private fun MutableList<Point>.moveHead(move: RopeMove) {
-        val movedHead = first().stepInDirection(move.direction)
-        this[0] = movedHead
+    private fun MutableList<Point>.moveHead(move: RopeMove) = also { this[0] = first().stepInDirection(move.direction) }
+
+    private fun followHead(tail: Point, head: Point) = when {
+        tail onSameColumnAs head -> if (tail lowerThan head) tail.stepInDirection(DOWN) else tail.stepInDirection(UP)
+        tail onSameRowAs head -> if (tail leftOf head) tail.stepInDirection(LEFT) else tail.stepInDirection(RIGHT)
+        else -> when {
+            head leftOf tail && head lowerThan tail -> tail.stepInDirection(RIGHT).stepInDirection(UP)
+            head leftOf tail -> tail.stepInDirection(RIGHT).stepInDirection(DOWN)
+            head lowerThan tail -> tail.stepInDirection(LEFT).stepInDirection(UP)
+            else -> tail.stepInDirection(LEFT).stepInDirection(DOWN)
+        }
     }
 
     fun visualize(gridWidth: Int, gridHeight: Int) =
@@ -58,27 +64,11 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
             }.joinToString("\n") { it.joinToString("") }
 }
 
-private fun followHead(tail: Point, head: Point): Point {
-    return if (tail.x == head.x) {
-        if (tail.y > head.y) tail.stepInDirection(DOWN) else tail.stepInDirection(UP)
-    } else if (tail.y == head.y) {
-        if (tail.x > head.x) tail.stepInDirection(LEFT) else tail.stepInDirection(RIGHT)
-    } else {
-        when {
-            head.x > tail.x && head.y > tail.y -> tail.stepInDirection(RIGHT).stepInDirection(UP)
-            head.x > tail.x -> tail.stepInDirection(RIGHT).stepInDirection(DOWN)
-            head.y > tail.y -> tail.stepInDirection(LEFT).stepInDirection(UP)
-            else -> tail.stepInDirection(LEFT).stepInDirection(DOWN)
-        }
-    }
-}
-
 data class RopeMove(val direction: Direction, val distance: Int)
 
-fun String.toRopeMoves(): List<RopeMove> =
+fun String.toRopeMoves() =
         mapLines {
-            it.trim().split(" ")
-                    .let { (direction, distance) -> RopeMove(direction.getByLetter(), distance.trim().toInt()) }
+            it.trim().split(" ").let { (direction, distance) -> RopeMove(direction.getByLetter(), distance.trim().toInt()) }
         }
 
 private fun String.getByLetter() =
