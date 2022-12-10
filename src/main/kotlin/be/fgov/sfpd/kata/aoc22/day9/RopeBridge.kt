@@ -20,23 +20,21 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
 //                        .also { println("\n$move\n" + allStepsExecuted.last().visualize(30, 10)) }
             }.toList()
 
-    private fun allStepsAfter(move: RopeMove): List<Rope> {
-        val allSteps = mutableListOf(this)
-        (0 until move.distance).forEach { _ ->
-            allSteps += Rope( move(allSteps.last(), move.direction) )
+    private fun allStepsAfter(move: RopeMove)=
+        (0 until move.distance).fold(mutableListOf(this)) { allSteps,_ ->
+            allSteps += Rope(allSteps.last().stepTowards(move.direction))
+            allSteps
         }
-        return allSteps
-    }
 
-    private fun move(rope: Rope, direction: Direction): MutableList<Point> {
-        val movingRope = rope.knots.toMutableList().moveHead(direction)
+    private fun Rope.stepTowards(direction: Direction): MutableList<Point> {
+        val movingRope = knots.toMutableList().moveHead(direction)
 
         (1 until movingRope.size).forEach { index ->
             val previousKnot = movingRope[index - 1]
             val knot = movingRope[index]
             movingRope[index] = when {
                 previousKnot.touching(knot) -> knot
-                else -> followHead(knot, previousKnot)
+                else -> this@Rope.followHead(knot, previousKnot)
             }
         }
         return movingRope
