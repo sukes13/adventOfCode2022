@@ -3,24 +3,24 @@ package be.fgov.sfpd.kata.aoc22.day9
 import be.fgov.sfpd.kata.aoc22.*
 import be.fgov.sfpd.kata.aoc22.Direction.*
 
-fun part1(input: String) = Rope().executeMoves(input.toRopeMoves()).countUniqueTails()
+fun part1(input: String) = input.toRopeMoves().executeMoves(Rope()).countUniqueTails()
 
-private val ropeOfTen = Rope(MutableList(10) { Point(0, 0) }.toList())
-fun part2(input: String) = ropeOfTen.executeMoves(input.toRopeMoves()).countUniqueTails()
+fun part2(input: String) = input.toRopeMoves().executeMoves(Rope(MutableList(10) { Point(0, 0) }.toList())).countUniqueTails()
+
+data class RopeMove(val direction: Direction, val distance: Int)
+fun List<RopeMove>.executeMoves(rope: Rope) =
+        fold(mutableListOf(rope)) { allStepsExecuted, move ->
+            allStepsExecuted += allStepsExecuted.last().allStepsAfter(move)
+            allStepsExecuted
+//                        .also { println("\n$move\n" + allStepsExecuted.last().visualize(30, 10)) }
+        }.toList()
 
 private fun List<Rope>.countUniqueTails() = map { it.tail }.also { println(it.visualize(30, 30)) }.distinct().count()
 
 data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
     val tail: Point get() = knots.last()
 
-    fun executeMoves(moves: List<RopeMove>) =
-            moves.fold(mutableListOf(this)) { allStepsExecuted, move ->
-                allStepsExecuted += allStepsExecuted.last().allStepsAfter(move)
-                allStepsExecuted
-//                        .also { println("\n$move\n" + allStepsExecuted.last().visualize(30, 10)) }
-            }.toList()
-
-    private fun allStepsAfter(move: RopeMove)=
+    fun allStepsAfter(move: RopeMove)=
         (0 until move.distance).fold(mutableListOf(this)) { allSteps,_ ->
             allSteps += Rope(allSteps.last().stepTowards(move.direction))
             allSteps
@@ -66,8 +66,6 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
                 }
             }.joinToString("\n") { it.joinToString("") }
 }
-
-data class RopeMove(val direction: Direction, val distance: Int)
 
 fun String.toRopeMoves() =
         mapLines {
