@@ -15,36 +15,41 @@ data class Rope(val knots: List<Point> = listOf(Point(0, 0), Point(0, 0))) {
 
     fun executeMoves(moves: List<RopeMove>) =
             moves.fold(mutableListOf(this)) { allStepsExecuted, move ->
-                allStepsExecuted += allStepsExecuted.last().allStepsOf(move)
+                allStepsExecuted += allStepsExecuted.last().allStepsAfter(move)
                 allStepsExecuted
 //                        .also { println("\n$move\n" + allStepsExecuted.last().visualize(30, 10)) }
             }.toList()
 
-    private fun allStepsOf(move: RopeMove) =
-            (0 until move.distance).fold(mutableListOf(this)) { allRopes, _ ->
-                val movingRope = allRopes.last().knots.toMutableList().moveHead(move)
+    private fun allStepsAfter(move: RopeMove): List<Rope> {
+        val allSteps = mutableListOf(this)
+        (0 until move.distance).forEach { _ ->
+            allSteps += Rope( move(allSteps.last(), move.direction) )
+        }
+        return allSteps
+    }
 
-                (1 until movingRope.size).forEach { index ->
-                    val previousKnot = movingRope[index - 1]
-                    val knot = movingRope[index]
-                    movingRope[index] = when {
-                        previousKnot.touching(knot) -> knot
-                        else -> followHead(knot, previousKnot)
-                    }
-                }
+    private fun move(rope: Rope, direction: Direction): MutableList<Point> {
+        val movingRope = rope.knots.toMutableList().moveHead(direction)
 
-                allRopes += Rope(movingRope)
-                allRopes
-            }.toList()
+        (1 until movingRope.size).forEach { index ->
+            val previousKnot = movingRope[index - 1]
+            val knot = movingRope[index]
+            movingRope[index] = when {
+                previousKnot.touching(knot) -> knot
+                else -> followHead(knot, previousKnot)
+            }
+        }
+        return movingRope
+    }
 
-    private fun MutableList<Point>.moveHead(move: RopeMove) = also { this[0] = first().stepInDirection(move.direction) }
+    private fun MutableList<Point>.moveHead(direction: Direction) = also { this[0] = first().stepInDirection(direction) }
 
     private fun followHead(tail: Point, head: Point) = when {
         tail onSameColumnAs head -> if (tail lowerThan head) tail.stepInDirection(DOWN) else tail.stepInDirection(UP)
-        tail onSameRowAs head -> if (tail leftOf head) tail.stepInDirection(LEFT) else tail.stepInDirection(RIGHT)
+        tail onSameRowAs head -> if (tail moreToLeft head) tail.stepInDirection(LEFT) else tail.stepInDirection(RIGHT)
         else -> when {
-            head leftOf tail && head lowerThan tail -> tail.stepInDirection(RIGHT).stepInDirection(UP)
-            head leftOf tail -> tail.stepInDirection(RIGHT).stepInDirection(DOWN)
+            head moreToLeft tail && head lowerThan tail -> tail.stepInDirection(RIGHT).stepInDirection(UP)
+            head moreToLeft tail -> tail.stepInDirection(RIGHT).stepInDirection(DOWN)
             head lowerThan tail -> tail.stepInDirection(LEFT).stepInDirection(UP)
             else -> tail.stepInDirection(LEFT).stepInDirection(DOWN)
         }
