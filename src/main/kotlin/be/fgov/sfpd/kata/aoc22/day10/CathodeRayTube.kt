@@ -7,29 +7,45 @@ fun part1(input: String) = VideoSystem().executeProgram(input.toCRTCommands()).h
         .filter { it.cycle in interestingCycles }
         .sumOf { it.cycle * it.registerX }
 
-
-
+fun part2(input: String) =
+        VideoSystem().executeProgram(input.toCRTCommands())
+                .lineImage(40).mapIndexed { index, cycleImage ->
+                    if ((index + 1) % 40 == 0) cycleImage + "\n" else cycleImage
+                }.joinToString("").trimIndent()
 
 class VideoSystem() {
-    var history: List<CPUState> = mutableListOf(CPUState())
+    val history = mutableListOf(CPUState())
 
     fun executeProgram(command: List<CRTCommand>): VideoSystem {
         command.forEach { this.execute(it) }
         return this
     }
 
-    fun execute(command: CRTCommand) {
-        history = when (command.name) {
-            "noop" -> executeCycle(command)
+    private fun execute(command: CRTCommand) {
+        when (command.name) {
+            "noop" -> history.add(cpuStateAfter(command))
             "addx" -> {
-                history = executeCycle(CRTCommand("noop", 0))
-                executeCycle(command)
+                history.add(cpuStateAfter(CRTCommand("noop", 0)))
+                history.add(cpuStateAfter(command))
             }
             else -> error("Invalid Command: ${command.name}")
         }
     }
 
-    private fun executeCycle(command: CRTCommand) = history.plus(history.last().afterExecuting(command))
+    fun lineImage(rolloverAt: Int) =
+            history.dropLast(1).map { cpuState ->
+                when (cpuState.registerX) {
+                    in sprite(cpuState.cycle - 1, rolloverAt) -> "#"
+                    else -> "."
+                }
+            }
+
+    private fun cpuStateAfter(command: CRTCommand) = history.last().afterExecuting(command)
+
+    private fun sprite(cycle: Int, rolloverAt: Int): List<Int> {
+        val rollovers = (cycle / rolloverAt) * rolloverAt
+        return listOf((if (cycle - 1 >= 0) cycle - 1 else 0), cycle, cycle + 1).map { it - rollovers }
+    }
 }
 
 data class CPUState(val cycle: Int = 1, val registerX: Int = 1) {
