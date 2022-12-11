@@ -9,19 +9,19 @@ class SolveDay11Test {
     @Test
     fun `example input part 1`() {
         val input = readFile("day11/exampleInput.txt")
-        assertThat(part1(input)).isEqualTo(13140)
+        assertThat(part1(input)).isEqualTo(10605)
     }
 
     @Test
     fun `actual input part 1`() {
         val input = readFile("day11/input.txt")
-        assertThat(part1(input)).isEqualTo(12840)
+        assertThat(part1(input)).isEqualTo(72884)
     }
 
     @Test
     fun `example input part 2`() {
         val input = readFile("day11/exampleInput.txt")
-        assertThat(part1(input)).isEqualTo(12840)
+        assertThat(part1(input)).isEqualTo(2713310158)
     }
 
     @Test
