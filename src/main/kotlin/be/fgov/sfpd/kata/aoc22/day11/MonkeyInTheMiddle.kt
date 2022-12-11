@@ -4,46 +4,40 @@ import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 
 typealias Monkeys = Map<Int, Monkey>
 
-fun part1(input: String): Int {
-     val monkeys = input.toMonkeys().doNumberOfSteps(20)
+fun part1(input: String) = input.toMonkeys().doNumberOfSteps(20, 3).monkeyBusiness()
 
-    return monkeys.values.map { it.inspections }.sorted().takeLast(2).windowed(2).map { (a,b) -> a * b }.single()
-}
+fun part2(input: String) = input.toMonkeys().doNumberOfSteps(10000, 1).monkeyBusiness()
 
-fun part2(input: String): Int {
-    val monkeys = input.toMonkeys().doNumberOfSteps(10000)
+private fun Monkeys.monkeyBusiness() = values.map { it.inspections }.sorted().takeLast(2).windowed(2).map { (a, b) -> a * b }.single()
 
-    return monkeys.values.map { it.inspections }.sorted().takeLast(2).windowed(2).map { (a,b) -> a * b }.single()
-}
-
-private fun Monkeys.doNumberOfSteps(number : Int): Monkeys {
+private fun Monkeys.doNumberOfSteps(number: Int, relief: Int): Monkeys {
+    val commonModulus = this.values.fold(1L) { modulus, m -> modulus * m.check.value }
     var monkeys = this
 
     (0 until number).forEach { _ ->
-        monkeys = monkeys.doRound()
+        monkeys = monkeys.doRound(commonModulus, relief)
     }
 
     return monkeys
 }
 
 
-fun Monkeys.doRound() : Monkeys {
+fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     val currentMonkeys = this.toMutableMap()
 
     for (monkeyId in currentMonkeys.keys) {
-        println("Monkey ${monkeyId}:")
+//        println("Monkey ${monkeyId}: ${currentMonkeys[monkeyId]!!.inspections}")
         for (item in currentMonkeys[monkeyId]!!.items) {
-            println("  - inspects item: $item.")
+//            println("  - inspects item: $item.")
             val monkey = currentMonkeys[monkeyId]!!
-            val worryIncreased = monkey.operation(item)
-                    .also { println("    and worry increased to: $it") }
-            val interestDropped = (worryIncreased / 3)
-                    .also { println("    but worry drops to: $it") }
-            val throwTo = if (interestDropped % monkey.check.value == 0L) monkey.check.monkey1 else monkey.check.monkey2
-                    .also { println("    Check divisible by ${monkey.check.value} and throws to Monkey: $it ") }
+            val updatedWorry = monkey.operation(item) / relief % commonModulus
+//                    .also { println("    but worry drops to: $it") }
+            val throwTo = if (updatedWorry % monkey.check.value == 0L) monkey.check.monkey1 else monkey.check.monkey2
+//                    .also { println("    Check divisible by ${monkey.check.value} and throws to Monkey: $it ") }
 
             currentMonkeys[monkeyId] = monkey.copy(items = monkey.items.drop(1), inspections = monkey.inspections + 1)
-            currentMonkeys[throwTo] = currentMonkeys[throwTo]?.copy(items = currentMonkeys[throwTo]!!.items.plus(interestDropped))
+
+            currentMonkeys[throwTo] = currentMonkeys[throwTo]?.copy(items = currentMonkeys[throwTo]!!.items.plus(updatedWorry))
                     ?: error("Cannot throw to Monkey: ${monkeyId}")
         }
     }
@@ -65,20 +59,16 @@ private fun String.findMonkeyId() = drop(6).dropLast(1).trim().toInt()
 private fun String.monkeyItems() = drop(18).split(", ").map { it.toLong() }
 private fun String.monkeyOperation(): (Long) -> Long = drop(23).split(" ")
         .let { (operator, value) ->
-            { it.doOperation(operator, if (value == "old") it else value.toLong()) }
+            {
+                val other = if (value == "old") it else value.toLong()
+                when (operator) {
+                    "+" -> it + other
+                    "*" -> it * other
+                    else -> error("Unknown operator found: $operator")
+                }
+            }
         }
 
-private fun Long.doOperation(operator: String, other: Long) =
-        when (operator) {
-            "+" -> this + other
-            "*" -> this * other
-            else -> error("Unknown operator found: $operator")
-        }
+data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L)
 
-data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Int = 0) {
-
-}
-
-data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int) {
-
-}
+data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int)
