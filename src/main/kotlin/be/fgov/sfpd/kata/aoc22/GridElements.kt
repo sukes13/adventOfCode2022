@@ -55,16 +55,7 @@ infix fun Point.onSameColumnAs(other: Point) = x == other.x
 infix fun Point.moreToLeft(other: Point) = x > other.x
 infix fun Point.lowerThan(other: Point) = y > other.y
 
-fun List<Point>.visualize(gridWidth: Int, gridHeight: Int): String =
-        (gridHeight downTo -gridHeight).map { y ->
-            (-gridWidth until gridWidth).mapNotNull { x ->
-                when {
-                    Point(x, y) in this -> "#"
-                    Point(x, y) == Point(0, 0) -> "s"
-                    else -> "."
-                }
-            }
-        }.joinToString("\n") { it.joinToString("") }
+
 
 
 enum class Direction {
