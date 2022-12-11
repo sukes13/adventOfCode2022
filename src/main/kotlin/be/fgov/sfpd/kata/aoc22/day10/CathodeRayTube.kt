@@ -17,17 +17,12 @@ private class VideoSystem {
         return this
     }
 
-    fun image(rolloverAt: Int) = lineImage(rolloverAt).mapIndexed { index, cycleImage ->
-        if ((index + 1) % rolloverAt == 0) cycleImage + "\n" else cycleImage
+    fun image(rolloverAt: Int) = history.dropLast(1).mapIndexed { index, cpuState ->
+        when (cpuState.registerX) {
+            in sprite(cpuState.cycle - 1, rolloverAt) -> "#"
+            else -> "."
+        }.let { pixel -> if ((index + 1) % rolloverAt == 0) pixel + "\n" else pixel }
     }.joinToString("").trimIndent()
-
-    private fun lineImage(rolloverAt: Int) =
-            history.dropLast(1).map { cpuState ->
-                when (cpuState.registerX) {
-                    in sprite(cpuState.cycle - 1, rolloverAt) -> "#"
-                    else -> "."
-                }
-            }
 
     private fun execute(command: CRTCommand) {
         when (command.name) {
@@ -36,7 +31,6 @@ private class VideoSystem {
                 history.add(cpuStateAfter(CRTCommand("noop")))
                 history.add(cpuStateAfter(command))
             }
-
             else -> error("Invalid Command: ${command.name}")
         }
     }
