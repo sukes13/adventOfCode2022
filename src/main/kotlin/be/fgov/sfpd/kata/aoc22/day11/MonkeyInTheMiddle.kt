@@ -12,16 +12,12 @@ private fun Monkeys.monkeyBusiness() = values.map { it.inspections }.sorted().ta
 
 private fun Monkeys.doNumberOfSteps(number: Int, relief: Int): Monkeys {
     val commonModulus = this.values.fold(1L) { modulus, m -> modulus * m.check.value }
-    var monkeys = this
 
-    repeat(number) {
-        monkeys = monkeys.doRound(commonModulus, relief)
+    return (0 until  number).fold(this.toMutableMap()) { monkeys, _ ->
+        monkeys.doRound(commonModulus, relief).toMutableMap()
     }
-
-    return monkeys
 }
 
-//TODO: move mutability?
 fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     val currentMonkeys = this.toMutableMap()
 
@@ -32,7 +28,7 @@ fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
             val monkey = currentMonkeys[monkeyId]!!
             val inspectedItem = monkey.operation(item) / relief % commonModulus
 //                    .also { println("    but worry drops to: $it") }
-            val throwTo = monkey.throwToMonkeyFor(inspectedItem)
+            val throwTo = monkey.check.throwToMonkeyFor(inspectedItem)
 //                    .also { println("    Check divisible by ${monkey.check.value} and throws to Monkey: $it ") }
 
             currentMonkeys[monkeyId] = monkey.copy(items = monkey.items.drop(1), inspections = monkey.inspections + 1)
@@ -69,9 +65,7 @@ private fun String.monkeyOperation(): (Long) -> Long = drop(23).split(" ")
             }
         }
 
-//TODO: move to monkeycheck
-data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L){
-    fun throwToMonkeyFor(worry: Long) = if (worry % check.value == 0L) check.monkey1 else check.monkey2
+data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L)
+data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int){
+    fun throwToMonkeyFor(worry: Long) = if (worry % value == 0L) monkey1 else monkey2
 }
-
-data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int)
