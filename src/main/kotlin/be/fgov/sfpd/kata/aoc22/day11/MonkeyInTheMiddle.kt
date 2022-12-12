@@ -13,26 +13,21 @@ private fun Monkeys.monkeyBusiness() = values.map { it.inspections }.sorted().ta
 private fun Monkeys.doNumberOfSteps(number: Int, relief: Int): Monkeys {
     val commonModulus = this.values.fold(1L) { modulus, m -> modulus * m.check.value }
 
-    return (0 until  number).fold(this.toMutableMap()) { monkeys, _ ->
-        monkeys.doRound(commonModulus, relief).toMutableMap()
+    return (0 until  number).fold(this) { monkeys, _ ->
+        monkeys.doRound(commonModulus, relief)
     }
 }
 
 fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     val currentMonkeys = this.toMutableMap()
 
-    for (monkeyId in currentMonkeys.keys) {
-//        println("Monkey ${monkeyId}: ${currentMonkeys[monkeyId]!!.inspections}")
-        for (item in currentMonkeys[monkeyId]!!.items) {
-//            println("  - inspects item: $item.")
+    currentMonkeys.keys.forEach { monkeyId ->
+        currentMonkeys[monkeyId]!!.items.forEach { item ->
             val monkey = currentMonkeys[monkeyId]!!
             val inspectedItem = monkey.operation(item) / relief % commonModulus
-//                    .also { println("    but worry drops to: $it") }
             val throwTo = monkey.check.throwToMonkeyFor(inspectedItem)
-//                    .also { println("    Check divisible by ${monkey.check.value} and throws to Monkey: $it ") }
 
             currentMonkeys[monkeyId] = monkey.copy(items = monkey.items.drop(1), inspections = monkey.inspections + 1)
-
             currentMonkeys[throwTo] = currentMonkeys[throwTo]?.copy(items = currentMonkeys[throwTo]!!.items.plus(inspectedItem))
                     ?: error("Cannot throw to Monkey: $monkeyId")
         }
@@ -40,7 +35,7 @@ fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     return currentMonkeys.toMap()
 }
 
-fun String.toMonkeys(): Monkeys = this.splitOnEmptyLine().map { monkeyString ->
+fun String.toMonkeys() = splitOnEmptyLine().map { monkeyString ->
     val id = monkeyString.lines()[0].findMonkeyId()
     val items = monkeyString.lines()[1].monkeyItems()
     val operation: (Long) -> Long = monkeyString.lines()[2].monkeyOperation()
