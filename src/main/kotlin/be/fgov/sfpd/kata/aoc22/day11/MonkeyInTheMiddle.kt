@@ -36,9 +36,9 @@ fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
 }
 
 fun String.toMonkeys() = splitOnEmptyLine().map { monkeyString ->
-    val id = monkeyString.lines()[0].findMonkeyId()
-    val items = monkeyString.lines()[1].monkeyItems()
-    val operation: (Long) -> Long = monkeyString.lines()[2].monkeyOperation()
+    val id = monkeyString.lines()[0].drop(6).dropLast(1).trim().toInt()
+    val items = monkeyString.lines()[1].drop(18).split(", ").map { it.toLong() }
+    val operation: (Long) -> Long = monkeyString.lines()[2].toMonkeyOperation()
     val monkeyCheckValue: Int = monkeyString.lines()[3].drop(21).trim().toInt()
     val throwToMonkey1: Int = monkeyString.lines()[4].drop(29).trim().toInt()
     val throwToMonkey2: Int = monkeyString.lines()[5].drop(30).trim().toInt()
@@ -46,9 +46,7 @@ fun String.toMonkeys() = splitOnEmptyLine().map { monkeyString ->
     Monkey(id, items, operation, MonkeyCheck(monkeyCheckValue, throwToMonkey1, throwToMonkey2))
 }.associateBy { it.id }
 
-private fun String.findMonkeyId() = drop(6).dropLast(1).trim().toInt()
-private fun String.monkeyItems() = drop(18).split(", ").map { it.toLong() }
-private fun String.monkeyOperation(): (Long) -> Long = drop(23).split(" ")
+private fun String.toMonkeyOperation(): (Long) -> Long = drop(23).split(" ")
         .let { (operator, value) ->
             {
                 val other = if (value == "old") it else value.toLong()
