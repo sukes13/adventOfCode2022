@@ -14,14 +14,14 @@ private fun Monkeys.doNumberOfSteps(number: Int, relief: Int): Monkeys {
     val commonModulus = this.values.fold(1L) { modulus, m -> modulus * m.check.value }
     var monkeys = this
 
-    (0 until number).forEach { _ ->
+    repeat(number) {
         monkeys = monkeys.doRound(commonModulus, relief)
     }
 
     return monkeys
 }
 
-
+//TODO: move mutability?
 fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     val currentMonkeys = this.toMutableMap()
 
@@ -30,15 +30,15 @@ fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
         for (item in currentMonkeys[monkeyId]!!.items) {
 //            println("  - inspects item: $item.")
             val monkey = currentMonkeys[monkeyId]!!
-            val updatedWorry = monkey.operation(item) / relief % commonModulus
+            val inspectedItem = monkey.operation(item) / relief % commonModulus
 //                    .also { println("    but worry drops to: $it") }
-            val throwTo = if (updatedWorry % monkey.check.value == 0L) monkey.check.monkey1 else monkey.check.monkey2
+            val throwTo = monkey.throwToMonkeyFor(inspectedItem)
 //                    .also { println("    Check divisible by ${monkey.check.value} and throws to Monkey: $it ") }
 
             currentMonkeys[monkeyId] = monkey.copy(items = monkey.items.drop(1), inspections = monkey.inspections + 1)
 
-            currentMonkeys[throwTo] = currentMonkeys[throwTo]?.copy(items = currentMonkeys[throwTo]!!.items.plus(updatedWorry))
-                    ?: error("Cannot throw to Monkey: ${monkeyId}")
+            currentMonkeys[throwTo] = currentMonkeys[throwTo]?.copy(items = currentMonkeys[throwTo]!!.items.plus(inspectedItem))
+                    ?: error("Cannot throw to Monkey: $monkeyId")
         }
     }
     return currentMonkeys.toMap()
@@ -69,6 +69,9 @@ private fun String.monkeyOperation(): (Long) -> Long = drop(23).split(" ")
             }
         }
 
-data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L)
+//TODO: move to monkeycheck
+data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L){
+    fun throwToMonkeyFor(worry: Long) = if (worry % check.value == 0L) check.monkey1 else check.monkey2
+}
 
 data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int)
