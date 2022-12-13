@@ -10,7 +10,7 @@ fun part2(input: String) = input.toHeightMap().simplifiedDijkstraScan('E', 'a') 
     currentHeight <= nextHeight + 1
 }
 
-private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, upOrDown: (Int, Int) -> Boolean): Int {
+private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, upOrDownwards: (Int, Int) -> Boolean): Int {
     val queue = associate { height ->
         if (height.level == start) height to 0 else height to Int.MAX_VALUE
     }.toMutableMap()
@@ -20,7 +20,7 @@ private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, upOrDown
                 .minByOrNull { it.value }
                 ?.also { queue.remove(it.key) } ?: error("No minimal found, destination unreachable...")
 
-        current.key.accessibleNeighbours(queue, upOrDown)
+        current.key.accessibleNeighbours(queue, upOrDownwards)
                 .forEach { neighbour ->
                     val totalStepsToNeighbour = current.value + 1
                     queue[neighbour] = totalStepsToNeighbour
@@ -39,9 +39,9 @@ private data class Height(val location: Point, val level: Char) {
         else -> "abcdefghijklmnopqrstuvwxyz".indexOf(level)
     }
 
-    fun accessibleNeighbours(queue: MutableMap<Height, Int>, upOrDown: (Int, Int) -> Boolean): List<Height> =
+    fun accessibleNeighbours(queue: MutableMap<Height, Int>, upOrDownwards: (Int, Int) -> Boolean) =
             queue.keys.filter {
-                it.location in location.orthogonalNeighbours && upOrDown(levelHeight, it.levelHeight)
+                it.location in location.orthogonalNeighbours && upOrDownwards(levelHeight, it.levelHeight)
             }.toList()
 }
 
