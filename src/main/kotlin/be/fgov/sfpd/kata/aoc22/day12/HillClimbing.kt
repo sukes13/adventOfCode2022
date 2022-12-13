@@ -10,15 +10,17 @@ fun part2(input: String) = input.toHeightMap().simplifiedDijkstraScan('E', 'a') 
     currentHeight <= nextHeight + 1
 }
 
-private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, moveChecker: (Int, Int) -> Boolean): Int {
-    val queue = toStartQueue(start)
+private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, upOrDown: (Int, Int) -> Boolean): Int {
+    val queue = associate { height ->
+        if (height.level == start) height to 0 else height to Int.MAX_VALUE
+    }.toMutableMap()
 
     while (queue.isNotEmpty()) {
         val current = queue.filterNot { it.value == Int.MAX_VALUE }
                 .minByOrNull { it.value }
                 ?.also { queue.remove(it.key) } ?: error("No minimal found, destination unreachable...")
 
-        current.key.accessibleNeighbours(queue, moveChecker)
+        current.key.accessibleNeighbours(queue, upOrDown)
                 .forEach { neighbour ->
                     val totalStepsToNeighbour = current.value + 1
                     queue[neighbour] = totalStepsToNeighbour
@@ -29,22 +31,6 @@ private fun List<Height>.simplifiedDijkstraScan(start: Char, end: Char, moveChec
 
     error("Destination unreachable...")
 }
-
-private fun List<Height>.toStartQueue(start: Char) =
-        associate { height ->
-            when (height.level) {
-                start -> height to 0
-                else -> height to Int.MAX_VALUE
-            }
-        }.toMutableMap()
-
-
-private fun String.toHeightMap() =
-        lines().flatMapIndexed { row, line ->
-            line.trim().mapIndexed { col, level ->
-                Height(location = Point(col, row), level = level)
-            }
-        }
 
 private data class Height(val location: Point, val level: Char) {
     private val levelHeight = when (level) {
@@ -58,3 +44,10 @@ private data class Height(val location: Point, val level: Char) {
                 it.location in location.orthogonalNeighbours && upOrDown(levelHeight, it.levelHeight)
             }.toList()
 }
+
+private fun String.toHeightMap() =
+        lines().flatMapIndexed { row, line ->
+            line.trim().mapIndexed { col, level ->
+                Height(location = Point(col, row), level = level)
+            }
+        }
