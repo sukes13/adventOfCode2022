@@ -1,0 +1,52 @@
+[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]
+
+[[],[10,3,10,9]]
+[[[7]],[]]
+
+
+[1,[2,[[],[4,[10,6,5]]],8],9]
+
+
+[[[9],[[9,10,7,9,7],[10,0]]],[8],[[[2,4,4,6,9],7,[10,4],3,6],8,[1,10,[0,7,7,7]]],[10,[1,[3,4,7,3,0],4],[[6],10],[[0],8,4,[3],[1,5,6,5]]],[[2,[2,6,10,2,5],6],[4,[7,3,0,9,4],[0],[8]],[10,1],0,5]]
+
+ but was: ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=9)]), ListPacketValue(values=[ListPacketValue(
+ values=[IntPacketValue(value=9), IntPacketValue(value=10), IntPacketValue(value=7), IntPacketValue(value=9), IntPacketValue(value=7)]), ListPacketValue(
+ values=[IntPacketValue(value=10), IntPacketValue(value=0)])])]), ListPacketValue(values=[IntPacketValue(value=8)]),
+ ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=2), IntPacketValue(value=4), IntPacketValue(value=4),
+  IntPacketValue(value=6), IntPacketValue(value=9)]), IntPacketValue(value=7), ListPacketValue(values=[IntPacketValue(value=10), IntPacketValue(value=4)]),
+   IntPacketValue(value=3), IntPacketValue(value=6)]), IntPacketValue(value=8), ListPacketValue(values=[IntPacketValue(value=1), IntPacketValue(value=10),
+   ListPacketValue(values=[IntPacketValue(value=0), IntPacketValue(value=7), IntPacketValue(value=7), IntPacketValue(value=7)])])]),
+   ListPacketValue(values=[IntPacketValue(value=10), ListPacketValue(values=[IntPacketValue(value=1), ListPacketValue(values=[IntPacketValue(value=3),
+   IntPacketValue(value=4), IntPacketValue(value=7), IntPacketValue(value=3), IntPacketValue(value=0)]), IntPacketValue(value=4)]),
+    ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=6)]), IntPacketValue(value=10)]),
+    ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=0)]), IntPacketValue(value=8), IntPacketValue(value=4),
+    ListPacketValue(values=[IntPacketValue(value=3)]), ListPacketValue(values=[IntPacketValue(value=1), IntPacketValue(value=5), IntPacketValue(value=6),
+    IntPacketValue(value=5)])])]), ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=2), ListPacketValue(values=[IntPacketValue(value=2),
+    IntPacketValue(value=6), IntPacketValue(value=10), IntPacketValue(value=2), IntPacketValue(value=5)]), IntPacketValue(value=6)]),
+    ListPacketValue(values=[IntPacketValue(value=4), ListPacketValue(values=[IntPacketValue(value=7), IntPacketValue(value=3), IntPacketValue(value=0),
+     IntPacketValue(value=9), IntPacketValue(value=4)]), ListPacketValue(values=[IntPacketValue(value=0)]), ListPacketValue(values=[IntPacketValue(value=8)])]),
+      ListPacketValue(values=[IntPacketValue(value=10), IntPacketValue(value=1)]), IntPacketValue(value=0), IntPacketValue(value=5)])])
+
+

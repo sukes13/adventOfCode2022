@@ -53,28 +53,3 @@ Monkey 7:
   Test: divisible by 5
     If true: throw to monkey 4
     If false: throw to monkey 5
-
-
-
-
-
-
-Sabqponm
-abcryxxl
-accszExk
-acctuvwj
-abdefghi
-
-xwvsron
-yyutqpm
-SEayxwv
-bpqrstu
-bonmlkj
-cdefghi
-
-
-v..v<<<<
->v.vv<<^
-.>vv>E^^
-..v>>>^^
-..>>>>>^
