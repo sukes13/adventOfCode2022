@@ -62,6 +62,8 @@ sealed class PacketValue {
         }
 
         override fun toString() = "[${values.joinToString(",")}]"
+        operator fun plus(entireList: PacketValue) = copy(values = values.toMutableList() + entireList)
+        fun fillWith(entireList: List<PacketValue>) = copy(values = values.toMutableList() + entireList)
 
     }
 
@@ -75,20 +77,19 @@ fun String.toPacket() = drop(1).dropLast(1).toPacketValue()
 
 fun String.toPacketValue(): ArrayPacketValue {
     var stringToCheck = this
-    var arrayPacketValue = ArrayPacketValue()
+    var packet = ArrayPacketValue()
 
     while (stringToCheck.isNotEmpty()) {
         when {
             stringToCheck.first() == '[' -> {
                 val entireList = stringToCheck.findNextArrayContent()
-                arrayPacketValue = arrayPacketValue.copy(values = arrayPacketValue.values.toMutableList() + entireList.toPacketValue())
+                packet += entireList.toPacketValue()
                 stringToCheck = stringToCheck.drop(entireList.length + 1)
             }
 
             stringToCheck.first().isDigit() -> {
                 val allValues = stringToCheck.substringBefore('[').substringBefore(']')
-                val packetValuesToAdd = allValues.toIntPackages()
-                arrayPacketValue = arrayPacketValue.copy(values = arrayPacketValue.values.toMutableList() + packetValuesToAdd)
+                packet = packet.fillWith(allValues.toIntPackages())
                 stringToCheck = stringToCheck.drop(allValues.length)
             }
 
@@ -98,24 +99,23 @@ fun String.toPacketValue(): ArrayPacketValue {
         }
     }
 
-    return arrayPacketValue
+    return packet
 }
 
 private fun String.findNextArrayContent(): String {
     var content = substringBefore(']')
     (0..6).forEach { _ ->
-        content = this.towardsWholeArray(content)
+        content = run {
+            val dept = content.count { it == '[' }
+            this.positionOfCloserFor(dept)?.let { correctedCloser ->
+                this.take(correctedCloser)
+            } ?: content.drop(1)
+        }
     }
     return content.drop(1)
-}
-
-private fun String.towardsWholeArray(listContent: String): String {
-    val deptInList = listContent.count { it == '[' }
-    return positionOfCloserFor(deptInList)?.let { correctedCloser ->
-        this.take(correctedCloser)
-    } ?: listContent.drop(1)
 }
 
 private fun String.positionOfCloserFor(dept: Int) = Regex("]").findAll(this).map { it.range.first }.toList().getOrNull(dept - 1)
 
 private fun String.toIntPackages() = split(",").filter { it != "" }.map { it.toInt() }.map { IntPacketValue(it) }
+
