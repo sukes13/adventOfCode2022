@@ -23,8 +23,53 @@ fun part2(input: String): Int {
     }.reduce { a, b -> a * b }
 }
 
-sealed class PacketValue {
+fun String.toPacket() = drop(1).dropLast(1).toPacketValue()
 
+fun String.toPacketValue(): ArrayPacketValue {
+    var stringToCheck = this
+    var packet = ArrayPacketValue()
+
+    while (stringToCheck.isNotEmpty()) {
+        when {
+            stringToCheck.first() == '[' -> {
+                val arrayString = stringToCheck.findNextArrayContent()
+                packet = packet.add(arrayString.toPacketValue())
+                stringToCheck = stringToCheck.drop(arrayString.length + 1)
+            }
+
+            stringToCheck.first().isDigit() -> {
+                val allValuesString = stringToCheck.substringBefore('[').substringBefore(']')
+                packet = packet.add(allValuesString.toIntPackages())
+                stringToCheck = stringToCheck.drop(allValuesString.length)
+            }
+
+            stringToCheck.first() == ']' || stringToCheck.first() == ',' -> {
+                stringToCheck = stringToCheck.drop(1)
+            }
+        }
+    }
+
+    return packet
+}
+
+private fun String.findNextArrayContent(): String {
+    var content = substringBefore(']')
+    (0..6).forEach { _ ->
+        content = run {
+            val dept = content.count { it == '[' }
+            this.positionOfCloserFor(dept)?.let { correctedCloser ->
+                this.take(correctedCloser)
+            } ?: content.drop(1)
+        }
+    }
+    return content.drop(1)
+}
+
+private fun String.positionOfCloserFor(dept: Int) = Regex("]").findAll(this).map { it.range.first }.toList().getOrNull(dept - 1)
+
+private fun String.toIntPackages() = split(",").filter { it != "" }.map { it.toInt() }.map { IntPacketValue(it) }
+
+sealed class PacketValue {
     data class ArrayPacketValue(val values: List<PacketValue> = listOf()) : PacketValue() {
         fun comesBefore(other: ArrayPacketValue): Int {
             val longestListSize = if (values.size <= other.values.size) other.values.size else values.size
@@ -62,8 +107,8 @@ sealed class PacketValue {
         }
 
         override fun toString() = "[${values.joinToString(",")}]"
-        operator fun plus(entireList: PacketValue) = copy(values = values.toMutableList() + entireList)
-        fun fillWith(entireList: List<PacketValue>) = copy(values = values.toMutableList() + entireList)
+        fun add(other: PacketValue) = add(listOf(other))
+        fun add(other: List<PacketValue>) = copy(values = values.toMutableList() + other)
 
     }
 
@@ -72,50 +117,3 @@ sealed class PacketValue {
         operator fun compareTo(other: IntPacketValue) = this.value.compareTo(other.value)
     }
 }
-
-fun String.toPacket() = drop(1).dropLast(1).toPacketValue()
-
-fun String.toPacketValue(): ArrayPacketValue {
-    var stringToCheck = this
-    var packet = ArrayPacketValue()
-
-    while (stringToCheck.isNotEmpty()) {
-        when {
-            stringToCheck.first() == '[' -> {
-                val entireList = stringToCheck.findNextArrayContent()
-                packet += entireList.toPacketValue()
-                stringToCheck = stringToCheck.drop(entireList.length + 1)
-            }
-
-            stringToCheck.first().isDigit() -> {
-                val allValues = stringToCheck.substringBefore('[').substringBefore(']')
-                packet = packet.fillWith(allValues.toIntPackages())
-                stringToCheck = stringToCheck.drop(allValues.length)
-            }
-
-            stringToCheck.first() == ']' || stringToCheck.first() == ',' -> {
-                stringToCheck = stringToCheck.drop(1)
-            }
-        }
-    }
-
-    return packet
-}
-
-private fun String.findNextArrayContent(): String {
-    var content = substringBefore(']')
-    (0..6).forEach { _ ->
-        content = run {
-            val dept = content.count { it == '[' }
-            this.positionOfCloserFor(dept)?.let { correctedCloser ->
-                this.take(correctedCloser)
-            } ?: content.drop(1)
-        }
-    }
-    return content.drop(1)
-}
-
-private fun String.positionOfCloserFor(dept: Int) = Regex("]").findAll(this).map { it.range.first }.toList().getOrNull(dept - 1)
-
-private fun String.toIntPackages() = split(",").filter { it != "" }.map { it.toInt() }.map { IntPacketValue(it) }
-
