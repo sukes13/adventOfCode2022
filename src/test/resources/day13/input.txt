@@ -447,31 +447,3 @@
 
 [[5,7,[9,[],[8],10,1]]]
 [[[5],[0,10,[2,10,6,0,8]]],[0,6,10,9]]
-
-
-
-Expected :ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1),
-IntPacketValue(value=2)]), ListPacketValue(values=[IntPacketValue(value=5)])]), IntPacketValue(value=6)])])
-
-
-Actual   :ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1),
-IntPacketValue(value=2), ListPacketValue(values=[IntPacketValue(value=5)])])]), IntPacketValue(value=6)])])
-
-[1,1,3,1,1] vs [1,1,[5],1,1]
-
- but was: ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1)]),
- ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=2)]), ListPacketValue(values=[IntPacketValue(value=3)]),
- ListPacketValue(values=[IntPacketValue(value=4)])])])])
-
-expected: ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1)]), ListPacketValue(values=[IntPacketValue(value=2),
- IntPacketValue(value=3), IntPacketValue(value=4)])])
-
- but was: ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1)]),
-  ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=2)]), ListPacketValue(values=[IntPacketValue(value=3)]),
-   ListPacketValue(values=[IntPacketValue(value=4)])])])])
-
-
-expected: ListPacketValue(values=[ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=1)])]),
-ListPacketValue(values=[ListPacketValue(values=[IntPacketValue(value=2)]), ListPacketValue(values=[IntPacketValue(value=3)]),
- ListPacketValue(values=[IntPacketValue(value=4)])])])
-
