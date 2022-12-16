@@ -12,7 +12,7 @@ class DistressSignalTest {
     @ParameterizedTest(name = "Input:  \"{0}\" vs \"{1}\" in right order: \"{2}\"")
     @MethodSource("testPacketPairs")
     fun `test checkOrder`(packet1: String, packet2: String, result: Int) {
-        assertThat(packet1.toPacket().comesBeforeAsList(packet2.toPacket())).isEqualTo(result)
+        assertThat(packet1.toPacket().comesBefore(packet2.toPacket())).isEqualTo(result)
     }
 
     @ParameterizedTest(name = "Input:  \"{0}\"")
