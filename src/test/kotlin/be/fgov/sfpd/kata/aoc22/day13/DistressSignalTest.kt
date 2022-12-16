@@ -1,7 +1,5 @@
 package be.fgov.sfpd.kata.aoc22.day13
 
-import be.fgov.sfpd.kata.aoc22.day13.PacketValue.IntPacketValue
-import be.fgov.sfpd.kata.aoc22.day13.PacketValue.ListPacketValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -13,87 +11,58 @@ class DistressSignalTest {
 
     @ParameterizedTest(name = "Input:  \"{0}\" vs \"{1}\" in right order: \"{2}\"")
     @MethodSource("testPacketPairs")
-    fun `test checkOrder`(packet1: String, packet2: String, result: Boolean) {
-        assertThat(packet1.toPacket().comesBefore(packet2.toPacket())).isEqualTo(result)
+    fun `test checkOrder`(packet1: String, packet2: String, result: Int) {
+        assertThat(packet1.toPacket().comesBeforeAsList(packet2.toPacket())).isEqualTo(result)
     }
 
-    @ParameterizedTest(name = "Input:  \"{0}\" should give \"{1}\"")
+    @ParameterizedTest(name = "Input:  \"{0}\"")
     @MethodSource("testPackets")
-    fun `test toPacket`(input: String, result: PacketValue) {
-        assertThat(input.toPacket()).isEqualTo(result)
+    fun `test toPacket`(input: String) {
+        assertThat(input.toPacket().toString()).isEqualTo(input)
     }
 
     companion object {
 
         @JvmStatic
-        fun testPacketPairs() = listOf(
-                Arguments.of("[1,1,3,1,1]", "[1,1,5,1,1]", true),
-                Arguments.of("[[1],[2,3,4]]", "[[1],4]", true),
-                Arguments.of("[9]", "[[8,7,6]]", false),
-                Arguments.of("[[4,4],4,4]", "[[4,4],4,4,4]", true),
-                Arguments.of("[7,7,7,7]", "[7,7,7]", false),
-                Arguments.of("[]", "[3]", true),
-                Arguments.of("[[[]]]", "[[]]", false),
-                Arguments.of("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,0]]]],8,9]", false),
+        fun testPackets() = listOf(
+                Arguments.of("[1,1,5,1]"),
+                Arguments.of("[[1],4]"),
+                Arguments.of("[[1],[2,3,4]]"),
+                Arguments.of("[]"),
+                Arguments.of("[[[]]]"),
+                Arguments.of("[[[[1,2],[5]],6]]"),
+                Arguments.of("[[[5]],[1,[]]]"),
+                Arguments.of("[[],[]]"),
+                Arguments.of("[[[],[]],[]]"),
+                Arguments.of("[10]"),
+                Arguments.of("[[4,4],4,4]"),
+                Arguments.of("[1,[2,[[],[4,[10,6,5]]],[]],9]"),
+                Arguments.of("[[[9],[[9,10,7,9,7],[10,0]]],[8],[[[2,4,4,6,9],7,[10,4],3,6],8,[1,10,[0,7,7,7]]],[10,[1,[3,4,7,3,0],4],[[6],10],[[0],8,4,[3],[1,5,6,5]]],[[2,[2,6,10,2,5],6],[4,[7,3,0,9,4],[0],[8]],[10,1],0,5]]"),
+                Arguments.of("[[[5],[3,[6,8],[2,9,3],1,[8,8,4,4]],[[1,9],[6,7,6,8]]],[[1],[3,[2],[3]],[[],5,0,[2,8],[9,5,4]]],[7,6,6,10],[5,[5,[9],[2,10,7],10,[2,3]]]]"),
         )
 
         @JvmStatic
-        fun testPackets() = listOf(
-                Arguments.of("[1,1,5,1]", ListPacketValue(listOf(
-                        IntPacketValue(1), IntPacketValue(1), IntPacketValue(5), IntPacketValue(1)))
-                ),
-                Arguments.of("[[1],4]", ListPacketValue(listOf(
-                        ListPacketValue(listOf(IntPacketValue(1))),
-                        IntPacketValue(4)))),
-                Arguments.of("[[1],[2,3,4]]", ListPacketValue(listOf(
-                        ListPacketValue(listOf(
-                                IntPacketValue(1))), ListPacketValue(listOf(
-                        IntPacketValue(2), IntPacketValue(3), IntPacketValue(4)))))),
-                Arguments.of("[]", ListPacketValue()),
-                Arguments.of("[[[]]]", ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue()))))),
-                Arguments.of("[[[[1,2],[5]],6]]", ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(1), IntPacketValue(2))), ListPacketValue(listOf(IntPacketValue(5))))), IntPacketValue(6)))))),
-                Arguments.of("[[[5]],[1,[]]]", ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(5))))), ListPacketValue(listOf(IntPacketValue(1), ListPacketValue()))))),
-                Arguments.of("[[],[]]", ListPacketValue(listOf(ListPacketValue(), ListPacketValue()))),
-                Arguments.of("[[[],[]],[]]", ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(), ListPacketValue())), ListPacketValue()))),
-                Arguments.of("[10]", ListPacketValue(listOf(
-                        IntPacketValue(10)))),
-                Arguments.of("[[4,4],4,4]", ListPacketValue(listOf(
-                        ListPacketValue(listOf(
-                                IntPacketValue(4), IntPacketValue(4))), IntPacketValue(4), IntPacketValue(4)))),
-                Arguments.of("[1,[2,[[],[4,[10,6,5]]],[]],9]",
-                        ListPacketValue(listOf(IntPacketValue(1), ListPacketValue(listOf(
-                                IntPacketValue(2), ListPacketValue(listOf(
-                                ListPacketValue(), ListPacketValue(listOf(
-                                IntPacketValue(4), ListPacketValue(listOf(
-                                IntPacketValue(10), IntPacketValue(6), IntPacketValue(5)
-                        )))))),
-                                ListPacketValue()
-                        )),
-                                IntPacketValue(9)
-                        ))
-                ),
-                Arguments.of(
-                        "[[[9],[[9,10,7,9,7],[10,0]]],[8],[[[2,4,4,6,9],7,[10,4],3,6],8,[1,10,[0,7,7,7]]],[10,[1,[3,4,7,3,0],4],[[6],10],[[0],8,4,[3],[1,5,6,5]]],[[2,[2,6,10,2,5],6],[4,[7,3,0,9,4],[0],[8]],[10,1],0,5]]",
-                        ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(value = 9))), ListPacketValue(listOf(ListPacketValue(
-                                listOf(IntPacketValue(value = 9), IntPacketValue(value = 10), IntPacketValue(value = 7), IntPacketValue(value = 9), IntPacketValue(value = 7))), ListPacketValue(
-                                listOf(IntPacketValue(value = 10), IntPacketValue(value = 0))))))), ListPacketValue(listOf(IntPacketValue(value = 8))),
-                                ListPacketValue(listOf(ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(value = 2), IntPacketValue(value = 4), IntPacketValue(value = 4),
-                                        IntPacketValue(value = 6), IntPacketValue(value = 9))), IntPacketValue(value = 7), ListPacketValue(listOf(IntPacketValue(value = 10), IntPacketValue(value = 4))),
-                                        IntPacketValue(value = 3), IntPacketValue(value = 6))), IntPacketValue(value = 8), ListPacketValue(listOf(IntPacketValue(value = 1), IntPacketValue(value = 10),
-                                        ListPacketValue(listOf(IntPacketValue(value = 0), IntPacketValue(value = 7), IntPacketValue(value = 7), IntPacketValue(value = 7))))))),
-                                ListPacketValue(listOf(IntPacketValue(value = 10), ListPacketValue(listOf(IntPacketValue(value = 1), ListPacketValue(listOf(IntPacketValue(value = 3),
-                                        IntPacketValue(value = 4), IntPacketValue(value = 7), IntPacketValue(value = 3), IntPacketValue(value = 0))), IntPacketValue(value = 4))),
-                                        ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(value = 6))), IntPacketValue(value = 10))),
-                                        ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(value = 0))), IntPacketValue(value = 8), IntPacketValue(value = 4),
-                                                ListPacketValue(listOf(IntPacketValue(value = 3))), ListPacketValue(listOf(IntPacketValue(value = 1), IntPacketValue(value = 5), IntPacketValue(value = 6),
-                                                IntPacketValue(value = 5))))))), ListPacketValue(listOf(ListPacketValue(listOf(IntPacketValue(value = 2), ListPacketValue(listOf(IntPacketValue(value = 2),
-                                IntPacketValue(value = 6), IntPacketValue(value = 10), IntPacketValue(value = 2), IntPacketValue(value = 5))), IntPacketValue(value = 6))),
-                                ListPacketValue(listOf(IntPacketValue(value = 4), ListPacketValue(listOf(IntPacketValue(value = 7), IntPacketValue(value = 3), IntPacketValue(value = 0),
-                                        IntPacketValue(value = 9), IntPacketValue(value = 4))), ListPacketValue(listOf(IntPacketValue(value = 0))), ListPacketValue(listOf(IntPacketValue(value = 8))))),
-                                ListPacketValue(listOf(IntPacketValue(value = 10), IntPacketValue(value = 1))), IntPacketValue(value = 0), IntPacketValue(value = 5))))),
-                ))
+        fun testPacketPairs() = listOf(
+                Arguments.of("[1,1,3,1,1]", "[1,1,5,1,1]", 1),
+                Arguments.of("[[1],[2,3,4]]", "[[1],4]", 1),
+                Arguments.of("[[[1],[2,3,4]]]", "[[[1],4]]", 1),
+                Arguments.of("[9]", "[[8,7,6]]", -1),
+                Arguments.of("[[4,4],4,4]", "[[4,4],4,4,4]", 1),
+                Arguments.of("[[4,4],4,4,[]]", "[[4,4],4,4]", -1),
+                Arguments.of("[7,7,7,7]", "[7,7,7]", -1),
+                Arguments.of("[]", "[3]", 1),
+                Arguments.of("[3]", "[]", -1),
+                Arguments.of("[]", "[]", 0),
+                Arguments.of("[2,2,4,8,5]", "[6]", 1),
+                Arguments.of("[[[]]]", "[[]]", -1),
+                Arguments.of("[3,[],[[],[]]]", "[3,[],[[],[],[]]]", 1),
+                Arguments.of("[[]]", "[[[]]]", 1),
+                Arguments.of("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,0]]]],8,9]", -1),
+                Arguments.of("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,9]]]],8,9]", 1),
+                Arguments.of("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,7]]]],0,9]", -1),
+                Arguments.of("[[[4],[[9,9,4,10,8],[2,2,4,8,5],10,[4,4,10,7,2]],5,7,7]]", "[[0,[[3,3,7],6,2,2],9,[[9,3,1,6],[8,10]],0],[[4,[9,7,2,3]],4,0]]", -1),
+                )
     }
-
 }
 
 

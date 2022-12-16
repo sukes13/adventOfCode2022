@@ -15,15 +15,15 @@ class SolveDay13Test {
     @Test
     fun `actual input part 1`() {
         val input = readFile("day13/input.txt")
-        assertThat(part1(input)).isEqualTo(1333) //Too low
+        assertThat(part1(input)).isEqualTo(6101) //Too low
     }
-//
+
 //    @Test
 //    fun `example input part 2`() {
 //        val input = readFile("day13/exampleInput.txt")
-//        assertThat(part2(input)).isEqualTo(29)
+//        assertThat(part2(input)).isEqualTo(140)
 //    }
-//
+
 //    @Test
 //    fun `actual input part 2`() {
 //        val input = readFile("day13/input.txt")
