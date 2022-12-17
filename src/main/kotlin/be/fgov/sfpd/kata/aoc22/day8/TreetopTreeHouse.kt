@@ -50,7 +50,7 @@ fun Point.distanceToEdge(viewDirection: Direction, gridSize: Int) =
             LEFT -> x
         }
 
-fun String.toTreetopGrid() =
+fun String.toTreetopGrid(): Map<Int, List<Int>> =
         lines().mapIndexed { index, line ->
             index to line.toList().map { it.digitToInt() }
         }.toMap()

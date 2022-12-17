@@ -15,7 +15,7 @@ class SolveDay13Test {
     @Test
     fun `actual input part 1`() {
         val input = readFile("day13/input.txt")
-        assertThat(part1(input)).isEqualTo(6101) //Too low
+        assertThat(part1(input)).isEqualTo(6101)
     }
 
     @Test

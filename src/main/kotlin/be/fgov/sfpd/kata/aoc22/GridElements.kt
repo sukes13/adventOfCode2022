@@ -1,5 +1,7 @@
 package be.fgov.sfpd.kata.aoc22
 
+import be.fgov.sfpd.kata.aoc22.Direction.*
+
 
 typealias Grid<T> = Map<Int, List<T>>
 
@@ -38,25 +40,22 @@ data class Point(val x: Int, val y: Int) {
 
     operator fun plus(vector: Point) = Point(this.x + vector.x, this.y + vector.y)
 
-    fun stepInDirection(direction: Direction) =
-            when (direction) {
-                Direction.UP -> copy(y = y + 1)
-                Direction.RIGHT -> copy(x = x + 1)
-                Direction.DOWN -> copy(y = y - 1)
-                Direction.LEFT -> copy(x = x - 1)
-            }
-
-    fun touching(point: Point) = point in this.neighbours || point == this
-
+    fun touching(point: Point) = point in neighbours || point == this
 }
+
 
 infix fun Point.onSameRowAs(other: Point) = y == other.y
 infix fun Point.onSameColumnAs(other: Point) = x == other.x
 infix fun Point.moreToLeft(other: Point) = x > other.x
 infix fun Point.lowerThan(other: Point) = y > other.y
 
-
-
+fun Point.stepInDirection(direction: Direction) =
+        when (direction) {
+            UP -> copy(y = y + 1)
+            RIGHT -> copy(x = x + 1)
+            DOWN -> copy(y = y - 1)
+            LEFT -> copy(x = x - 1)
+        }
 
 enum class Direction {
     UP, RIGHT, DOWN, LEFT;
