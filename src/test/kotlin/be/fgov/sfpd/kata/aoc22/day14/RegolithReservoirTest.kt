@@ -2,13 +2,22 @@ package be.fgov.sfpd.kata.aoc22.day14
 
 import be.fgov.sfpd.kata.aoc22.Point
 import be.fgov.sfpd.kata.aoc22.day14.Filler.ROCK
+import be.fgov.sfpd.kata.aoc22.readFile
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 
 class RegolithReservoirTest {
+
+    @Test
+    fun `example input visualize start cave`() {
+        val input = readFile("day14/exampleInput.txt")
+        val startCave = readFile("day14/exampleStartCave.txt")
+        Assertions.assertThat(input.toCave().visualize()).isEqualTo(startCave.trimIndent())
+    }
 
     @ParameterizedTest(name = "Input:  \"{0}\" gives: \"{1}\"")
     @MethodSource("testRocks")

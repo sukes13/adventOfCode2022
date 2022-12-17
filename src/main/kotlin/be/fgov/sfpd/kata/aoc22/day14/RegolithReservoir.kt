@@ -3,32 +3,31 @@ package be.fgov.sfpd.kata.aoc22.day14
 import be.fgov.sfpd.kata.aoc22.Point
 import be.fgov.sfpd.kata.aoc22.day14.CaveElements.lineTo
 import be.fgov.sfpd.kata.aoc22.day14.Filler.ROCK
+import be.fgov.sfpd.kata.aoc22.flatMapLines
 import be.fgov.sfpd.kata.aoc22.lowerThan
 import be.fgov.sfpd.kata.aoc22.moreToLeft
 
 fun part1(input: String) = ""
 fun part2(input: String) = ""
 
-fun Cave.visualize(): String {
-    val width = maxBy { it.point.x }
-    return groupBy { it.point.y }.toSortedMap().map { (row , cavePoint) ->
-        "$row" + cavePoint.map { it.filler }
-    }.joinToString("\n")
-//        return (highestStack downTo 1).fold("\n") { image, level ->
-//            image + this.values.joinToString("") { stack ->
-//                stack.getOrNull(level - 1)?.let { "[${stack[stack.size - level]}] " } ?: "    "
-//            } + "\n"
-//        }.trimEnd()
-//
-//    return ""
-}
+fun Cave.visualize() =
+        (0 until 10).joinToString("\n") { y ->
+            "$y " + (494 until 504).map { x ->
+                when {
+                    Point(x, y) == Point(500, 0) -> "+"
+                    else -> this.firstOrNull { it atLocation Point(x, y) }?.filler ?: "."
+                }
+            }.joinToString("")
+        }
+
+fun String.toCave(): List<CaveTile> = flatMapLines { it.toRockLine() }.also { println(it.visualize()) }
 
 fun String.toRockLine(): List<CaveTile> =
         trim().split(" -> ").windowed(2, 1).flatMap { (start, end) ->
             (start.splitToPoint() lineTo end.splitToPoint()).map { CaveTile(it, ROCK) }
-        }.distinct().also { println( it.visualize() )}
+        }.distinct()
 
-fun String.splitToPoint(delimiter: String = ",") = split(delimiter).windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }.single()
+fun String.splitToPoint(delimiter: String = ",") = trim().split(delimiter).windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }.single()
 
 object CaveElements {
     infix fun Point.lineTo(end: Point) = when {
@@ -48,8 +47,14 @@ object CaveElements {
     }
 }
 
-data class CaveTile(val point: Point, val filler: Filler)
+data class CaveTile(val point: Point, val filler: Filler) {
+    infix fun atLocation(other: Point) = point == other
+}
 
 typealias Cave = List<CaveTile>
 
-enum class Filler { ROCK }
+enum class Filler(private val sign: String) {
+    ROCK("#");
+
+    override fun toString() = sign
+}
