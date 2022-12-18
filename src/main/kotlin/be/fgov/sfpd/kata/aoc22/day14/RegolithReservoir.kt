@@ -35,16 +35,17 @@ fun Cave.addUnitOfSand(dropPoint: Point, bottom: Int): Cave {
     var dropEnded = false
 
     while (!dropEnded) {
-        sand = when {
-            this[sand.pointUnder()] != null ->
-                when {
-                    this[sand.pointLeftUnder()] == null -> sand.pointLeftUnder()
-                    this[sand.pointRightUnder()] == null -> sand.pointRightUnder()
-                    else -> sand.also { dropEnded = true }
-                }
-
-            sand.y == bottom -> sand.also { dropEnded = true }
-            else -> sand.pointUnder()
+        sand = if (this[sand.pointUnder()] == null) {
+            when (sand.y) {
+                bottom -> sand.also { dropEnded = true }
+                else -> sand.pointUnder()
+            }
+        } else {
+            when {
+                this[sand.pointLeftUnder()] == null -> sand.pointLeftUnder()
+                this[sand.pointRightUnder()] == null -> sand.pointRightUnder()
+                else -> sand.also { dropEnded = true }
+            }
         }
     }
 
