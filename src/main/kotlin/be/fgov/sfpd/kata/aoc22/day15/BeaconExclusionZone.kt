@@ -15,6 +15,27 @@ fun part2(input: String, maxForPart: Int): Long {
     return distressSignal.x.toLong() * 4_000_000L + distressSignal.y
 }
 
+fun List<BeaconSensor>.pointsInRange(line: Int): Int {
+    val occupied = filter { it.point.y == line }.size + map { it.beacon }.filter { it.y == line }.distinct().size
+    return inRangeOn(line).count() - occupied
+}
+
+private fun List<BeaconSensor>.inRangeOn(line: Int): IntRange {
+    val res = map { sensor ->
+        val yDist = (sensor.point.y - line).absoluteValue
+        val range = sensor.point.x - (sensor.range - yDist)..sensor.point.x + (sensor.range - yDist)
+        println("Range: $range found for Sensor: ${sensor.point} ")
+        range
+    }.reduce { acc, intRange -> acc.join(intRange) }
+    return res
+}
+
+private infix fun IntRange.join(other: IntRange): IntRange {
+    val begin = if(first <= other.first) first else other.first
+    val end = if(last <= other.last) other.last else last
+    return begin .. end
+}
+
 fun List<BeaconSensor>.distressSignalIn(max: Int): Point {
     return (0..max).mapParallel { y ->
         (0..max).filter { x ->
@@ -25,15 +46,6 @@ fun List<BeaconSensor>.distressSignalIn(max: Int): Point {
 
 fun IntRange.mapParallel(f: suspend (Int) -> Point?): List<Point> = runBlocking {
     map { async(Dispatchers.Default) { f(it) } }.mapNotNull { it.await() }
-}
-
-fun List<BeaconSensor>.pointsInRange(line: Int): Int {
-    val maxRange = maxBy { it.range }.range
-    val minX = minBy { it.point.x }.point.x - maxRange
-    val maxX = maxBy { it.point.x }.point.x + maxRange
-    val occupied = filter { it.point.y == line }.size + map { it.beacon }.filter { it.y == line }.distinct().size
-
-    return (minX..maxX).filter { Point(it, line).inRange(this) }.toList().size - occupied
 }
 
 private fun Point.inRange(sensors: List<BeaconSensor>): Boolean {
