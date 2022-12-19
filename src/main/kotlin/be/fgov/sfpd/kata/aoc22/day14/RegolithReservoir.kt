@@ -27,7 +27,7 @@ fun Cave.fillUp(dropPoint: Point, fillStopper: (Cave, Int) -> Boolean): Cave {
         cave = cave.addUnitOfSand(dropPoint, bottom)
     }
 
-    return cave
+    return cave.also { println(it.visualize()) }
 }
 
 fun Cave.addUnitOfSand(dropPoint: Point, bottom: Int): Cave {
