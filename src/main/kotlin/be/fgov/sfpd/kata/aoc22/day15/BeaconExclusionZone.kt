@@ -8,56 +8,67 @@ import kotlinx.coroutines.runBlocking
 import kotlin.math.absoluteValue
 
 
-fun part1(input: String, max: Int) = input.toBeaconSensors().pointsInRange(max)
+//fun part1(input: String, line: Int) = input.toBeaconSensors().pointsInRange(line)
 fun part2(input: String, maxForPart: Int): Long {
     val distressSignal = input.toBeaconSensors().distressSignalIn(maxForPart)
-    println("RESUL? = ${distressSignal.x} , ${distressSignal.y}")
+    println("RESULT = $distressSignal")
     return distressSignal.x.toLong() * 4_000_000L + distressSignal.y
 }
 
-fun List<BeaconSensor>.pointsInRange(line: Int): Int {
-    val occupied = filter { it.point.y == line }.size + map { it.beacon }.filter { it.y == line }.distinct().size
-    return inRangeOn(line).count() - occupied
+fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
+        (0..max).mapNotNull { y ->
+            if (y % 200_000 == 0) println("Reached line: $y")
+            notInRangeOn(y)?.let {
+                println("Signal found : x=${it + 1}, y=$y")
+                Point(it + 1, y)
+            }
+        }.singleOrNull() ?: error("Multiple points found")
+
+private fun List<BeaconSensor>.notInRangeOn(line: Int): Int? {
+    val allRangesOn = allRangesOn(line)
+    return allRangesOn.fold(mutableListOf(allRangesOn.first())) { acc, range ->
+        acc += acc.last().filterOverlap(range)
+        acc
+    }.findGapOrNull()
 }
 
-private fun List<BeaconSensor>.inRangeOn(line: Int): IntRange {
-    val res = map { sensor ->
-        val yDist = (sensor.point.y - line).absoluteValue
-        val range = sensor.point.x - (sensor.range - yDist)..sensor.point.x + (sensor.range - yDist)
-        println("Range: $range found for Sensor: ${sensor.point} ")
-        range
-    }.reduce { acc, intRange -> acc.join(intRange) }
-    return res
-}
+private fun MutableList<IntRange>.findGapOrNull() =
+        distinct().windowed(2, 1).firstNotNullOfOrNull { (intRange, b) ->
+            if (intRange.last + 1 < b.first) intRange.last else null
+        }
 
-private infix fun IntRange.join(other: IntRange): IntRange {
-    val begin = if(first <= other.first) first else other.first
-    val end = if(last <= other.last) other.last else last
-    return begin .. end
-}
+private fun IntRange.filterOverlap(other: IntRange): IntRange =
+        when {
+            this fullyOverlapses other -> other
+            other fullyOverlapses this -> this
+            this overlapses other -> last..other.last
+            first <= other.first -> other
+            else -> this
+        }
 
-fun List<BeaconSensor>.distressSignalIn(max: Int): Point {
-    return (0..max).mapParallel { y ->
-        (0..max).filter { x ->
-            !Point(x, y).inRange(this)
-        }.map { Point(it, y) }.singleOrNull().also { if (y % 500 == 0) println("$y rows checked found: $it") }
-    }.single()
+private infix fun IntRange.overlapses(other: IntRange) = first <= other.last && other.first <= last && last <= other.last
+
+private infix fun IntRange.fullyOverlapses(other: IntRange) = first >= other.first && last <= other.last
+
+private fun List<BeaconSensor>.allRangesOn(line: Int): Sequence<IntRange> =
+        asSequence().mapNotNull { sensor ->
+            val yDist = (sensor.point.y - line).absoluteValue
+            if (sensor.range >= yDist) {
+                (sensor.point.x - (sensor.range - yDist)..sensor.point.x + (sensor.range - yDist))
+            } else null
+        }.sortedBy { it.first }
+
+data class BeaconSensor(val point: Point, val beacon: Point, val range: Int)
+
+fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { line ->
+    line.substringAfter("Sensor at x=").trim().split(": closest beacon is at x=")
+            .flatMap {
+                it.split(", y=").windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }
+            }.windowed(2).map { (sensor, beacon) ->
+                BeaconSensor(point = sensor, beacon = beacon, range = (sensor.x - beacon.x).absoluteValue + (sensor.y - beacon.y).absoluteValue)
+            }
 }
 
 fun IntRange.mapParallel(f: suspend (Int) -> Point?): List<Point> = runBlocking {
     map { async(Dispatchers.Default) { f(it) } }.mapNotNull { it.await() }
 }
-
-private fun Point.inRange(sensors: List<BeaconSensor>): Boolean {
-    return sensors.asSequence().map { it.point.taxiDistanceTo(this) <= it.range }.reduce { acc, next -> acc || next }
-}
-
-fun Point.taxiDistanceTo(other: Point) = (x - other.x).absoluteValue + (y - other.y).absoluteValue
-
-fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { it.toBeaconSensor() }
-private fun String.toBeaconSensor() =
-        substringAfter("Sensor at x=").trim().split(": closest beacon is at x=").flatMap {
-            it.split(", y=").windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }
-        }.windowed(2).map { (sensor, beacon) -> BeaconSensor(sensor, beacon, sensor.taxiDistanceTo(beacon)) }
-
-data class BeaconSensor(val point: Point, val beacon: Point, val range: Int)
