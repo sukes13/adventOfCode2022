@@ -2,52 +2,56 @@ package be.fgov.sfpd.kata.aoc22.day15
 
 import be.fgov.sfpd.kata.aoc22.Point
 import be.fgov.sfpd.kata.aoc22.flatMapLines
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlin.math.absoluteValue
 
 
-//fun part1(input: String, line: Int) = input.toBeaconSensors().pointsInRange(line)
+fun part1(input: String, line: Int) = input.toBeaconSensors().pointsInRangeOn(line)
+
 fun part2(input: String, maxForPart: Int): Long {
     val distressSignal = input.toBeaconSensors().distressSignalIn(maxForPart)
     println("RESULT = $distressSignal")
     return distressSignal.x.toLong() * 4_000_000L + distressSignal.y
 }
 
-private fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
-        (0..max).mapNotNull { y ->
-            notInRangeOn(y).also { if (y % 200_000 == 0) println("Checked until line: $y") }
-        }.singleOrNull() ?: error("None or multiple points found")
-
-private fun List<BeaconSensor>.notInRangeOn(line: Int): Point? {
-    val allRangesOn = allRangesOn(line)
-    return allRangesOn.fold(mutableListOf(allRangesOn.first())) { acc, range ->
-        acc += acc.last().filterOverlap(range)
-        acc
-    }.findGapOrNull()?.let {
-        println("Signal found : x=${it + 1}, y=$line")
-        Point(it + 1, line)
-    }
+private fun List<BeaconSensor>.pointsInRangeOn(line: Int): Int {
+    val beaconsOnLine = filter { it.beacon.y == line }.map { it.beacon }.distinct().size
+    val rangesOnLine = allRangesOn(line).sortWithoutOverlap()
+    return (rangesOnLine.first().first..rangesOnLine.last().last).count() - beaconsOnLine
 }
 
-private fun MutableList<IntRange>.findGapOrNull() =
-        distinct().windowed(2, 1).firstNotNullOfOrNull { (intRange, b) ->
-            if (intRange.last + 1 < b.first) intRange.last else null
-        }
+private fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
+        (0..max).mapNotNull { line ->
+            notInRangeOn(line).also { if (line % 200_000 == 0) println("Checked until line: $line") }
+        }.singleOrNull() ?: error("None or multiple points found")
 
-private fun IntRange.filterOverlap(other: IntRange): IntRange =
-        when {
-            this fullyOverlapses other -> other
-            other fullyOverlapses this -> this
-            this overlapses other -> last..other.last
-            first <= other.first -> other
-            else -> this
-        }
+private fun List<BeaconSensor>.notInRangeOn(line: Int): Point? =
+        allRangesOn(line)
+                .sortWithoutOverlap()
+                .findGapOrNull()?.let {
+                    println("Signal found : x=$it, y=$line")
+                    Point(it, line)
+                }
 
-private infix fun IntRange.overlapses(other: IntRange) = first <= other.last && other.first <= last && last <= other.last
+private fun List<IntRange>.sortWithoutOverlap(): List<IntRange> =
+        fold(mutableListOf(this.first())) { acc, range ->
+            val previous = acc.last()
+            acc += when {
+                previous fullyOverlaps range -> range
+                range fullyOverlaps previous -> previous
+                previous overlaps range -> previous.last..range.last
+                previous.first <= range.first -> range
+                else -> previous
+            }
+            acc
+        }.distinct()
 
-private infix fun IntRange.fullyOverlapses(other: IntRange) = first >= other.first && last <= other.last
+private infix fun IntRange.fullyOverlaps(other: IntRange) = first >= other.first && last <= other.last
+
+private infix fun IntRange.overlaps(other: IntRange) = first <= other.last && other.first <= last && last <= other.last
+
+private fun List<IntRange>.findGapOrNull() = windowed(2, 1).firstNotNullOfOrNull { (a, b) ->
+    if (a.last + 1 < b.first) a.last + 1 else null
+}
 
 private fun List<BeaconSensor>.allRangesOn(line: Int): List<IntRange> =
         mapNotNull { sensor ->
@@ -68,6 +72,6 @@ fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { line ->
             }
 }
 
-fun IntRange.mapParallel(f: suspend (Int) -> Point?): List<Point> = runBlocking {
-    map { async(Dispatchers.Default) { f(it) } }.mapNotNull { it.await() }
-}
+//fun IntRange.mapParallel(f: suspend (Int) -> Point?): List<Point> = runBlocking {
+//    map { async(Dispatchers.Default) { f(it) } }.mapNotNull { it.await() }
+//}

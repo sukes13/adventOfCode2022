@@ -6,20 +6,20 @@ import org.junit.jupiter.api.Test
 
 class SolveDay15Test {
 
-//
-//    @Test
-//    fun `example input part 1`() {
-//        val input = readFile("day15/exampleInput.txt")
-//        val lineForExample = 10
-//        assertThat(part1(input,lineForExample)).isEqualTo(26)
-//    }
-//
-//    @Test
-//    fun `actual input part 1`() {
-//        val input = readFile("day15/input.txt")
-//        val line = 2000000
-//        assertThat(part1(input, line)).isEqualTo(5508234)
-//    }
+
+    @Test
+    fun `example input part 1`() {
+        val input = readFile("day15/exampleInput.txt")
+        val lineForExample = 10
+        assertThat(part1(input,lineForExample)).isEqualTo(26)
+    }
+
+    @Test
+    fun `actual input part 1`() {
+        val input = readFile("day15/input.txt")
+        val line = 2000000
+        assertThat(part1(input, line)).isEqualTo(5508234)
+    }
 
     @Test
     fun `example input part 2`() {
