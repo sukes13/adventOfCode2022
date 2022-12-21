@@ -15,21 +15,20 @@ fun part2(input: String, maxForPart: Int): Long {
     return distressSignal.x.toLong() * 4_000_000L + distressSignal.y
 }
 
-fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
+private fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
         (0..max).mapNotNull { y ->
-            if (y % 200_000 == 0) println("Reached line: $y")
-            notInRangeOn(y)?.let {
-                println("Signal found : x=${it + 1}, y=$y")
-                Point(it + 1, y)
-            }
-        }.singleOrNull() ?: error("Multiple points found")
+            notInRangeOn(y).also { if (y % 200_000 == 0) println("Checked until line: $y") }
+        }.singleOrNull() ?: error("None or multiple points found")
 
-private fun List<BeaconSensor>.notInRangeOn(line: Int): Int? {
+private fun List<BeaconSensor>.notInRangeOn(line: Int): Point? {
     val allRangesOn = allRangesOn(line)
     return allRangesOn.fold(mutableListOf(allRangesOn.first())) { acc, range ->
         acc += acc.last().filterOverlap(range)
         acc
-    }.findGapOrNull()
+    }.findGapOrNull()?.let {
+        println("Signal found : x=${it + 1}, y=$line")
+        Point(it + 1, line)
+    }
 }
 
 private fun MutableList<IntRange>.findGapOrNull() =
@@ -50,8 +49,8 @@ private infix fun IntRange.overlapses(other: IntRange) = first <= other.last && 
 
 private infix fun IntRange.fullyOverlapses(other: IntRange) = first >= other.first && last <= other.last
 
-private fun List<BeaconSensor>.allRangesOn(line: Int): Sequence<IntRange> =
-        asSequence().mapNotNull { sensor ->
+private fun List<BeaconSensor>.allRangesOn(line: Int): List<IntRange> =
+        mapNotNull { sensor ->
             val yDist = (sensor.point.y - line).absoluteValue
             if (sensor.range >= yDist) {
                 (sensor.point.x - (sensor.range - yDist)..sensor.point.x + (sensor.range - yDist))
