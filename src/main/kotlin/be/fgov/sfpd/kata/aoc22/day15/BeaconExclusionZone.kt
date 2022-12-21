@@ -8,7 +8,7 @@ import kotlin.math.absoluteValue
 fun part1(input: String, line: Int) = input.toBeaconSensors().pointsInRangeOn(line)
 
 fun part2(input: String, maxForPart: Int): Long {
-    val distressSignal = input.toBeaconSensors().distressSignalIn(maxForPart)
+    val distressSignal = input.toBeaconSensors().pointOutOfRangeIn(maxForPart)
     println("RESULT = $distressSignal")
     return distressSignal.x.toLong() * 4_000_000L + distressSignal.y
 }
@@ -19,16 +19,16 @@ private fun List<BeaconSensor>.pointsInRangeOn(line: Int): Int {
     return (rangesOnLine.first().first..rangesOnLine.last().last).count() - beaconsOnLine
 }
 
-private fun List<BeaconSensor>.distressSignalIn(max: Int): Point =
+private fun List<BeaconSensor>.pointOutOfRangeIn(max: Int) =
         (0..max).mapNotNull { line ->
-            notInRangeOn(line).also { if (line % 200_000 == 0) println("Checked until line: $line") }
+            notInRangeOn(line).also { if (line % 200_000 == 0) println("Checked until line: ${"%,d".format(line)}") }
         }.singleOrNull() ?: error("None or multiple points found")
 
 private fun List<BeaconSensor>.notInRangeOn(line: Int): Point? =
         allRangesOn(line)
                 .sortWithoutOverlap()
                 .findGapOrNull()?.let {
-                    println("Signal found : x=$it, y=$line")
+                    println("Signal found at $it")
                     Point(it, line)
                 }
 
