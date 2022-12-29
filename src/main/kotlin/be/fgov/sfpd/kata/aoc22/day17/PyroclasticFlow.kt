@@ -9,6 +9,10 @@ fun part1(input: String) = Cave(input.toJetPattern()).dropRocks(2022)
 
 fun part2(input: String) = Cave(input.toJetPattern()).dropRocks(1_000_000_000_000L)
 
+typealias CaveLine = List<Boolean>
+typealias Rock = List<CaveLine>
+typealias RockTower = MutableMap<Long, CaveLine>
+
 data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
     private var tower: RockTower = mutableMapOf(0L to ((0 until width).map { true }.toList()))
     private val rockShapes = listOf(HorizontalLine(), PlusSign(), MirroredL(), VerticalLine(), Rectangle())
@@ -110,11 +114,6 @@ data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
         line.value.joinToString("") { if (it) "#" else "." }
     }.joinToString("\n")
 }
-
-
-typealias CaveLine = List<Boolean>
-typealias Rock = List<CaveLine>
-typealias RockTower = MutableMap<Long, CaveLine>
 
 enum class GasJet { LEFT, RIGHT }
 
