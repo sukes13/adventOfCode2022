@@ -5,135 +5,123 @@ import be.fgov.sfpd.kata.aoc22.day17.GasJet.RIGHT
 import be.fgov.sfpd.kata.aoc22.day17.RockShape.*
 
 
-fun part1(input: String) = Cave(input.toJetPattern()).dropRocks(2022).heightOfTower()
+fun part1(input: String) = Cave(input.toJetPattern()).dropRocks(2022)
 
-fun part2(input: String) = Cave(input.toJetPattern()).dropALotOfRocks(1000000000000L)
+fun part2(input: String) = Cave(input.toJetPattern()).dropRocks(1_000_000_000_000L)
 
 data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
-    private var tower: MutableMap<Long, CaveLine> = mutableMapOf(0L to ((0 until width).map { true }.toList()))
-    private val shapes = listOf(HorizontalLine(), PlusSign(), MirroredL(), VerticalLine(), Rectangle())
+    private var tower: RockTower = mutableMapOf(0L to ((0 until width).map { true }.toList()))
+    private val rockShapes = listOf(HorizontalLine(), PlusSign(), MirroredL(), VerticalLine(), Rectangle())
 
-    fun dropALotOfRocks(numberOfRocks: Long): Long {
-        val patternEnd = searchPattern(numberOfRocks)
-        val rocksInPattern = patternEnd.rocksEnd - patternEnd.rocksStart
-        val patternRepeats = (numberOfRocks - patternEnd.rocksStart) / rocksInPattern
-        val rocksInRepeats = patternRepeats * rocksInPattern
-        val remainingRocks = numberOfRocks - patternEnd.rocksStart - rocksInRepeats
+    fun dropRocks(totalRocks: Long): Long {
+        return totalRocks.dropWithPatternDetection()?.let { pattern ->
+            val rocksInPattern = pattern.rocksEnd - pattern.rocksStart
+            val patternRepeats = (totalRocks - pattern.rocksStart) / rocksInPattern
+            val remainingRocks = totalRocks - pattern.rocksStart - (patternRepeats * rocksInPattern)
 
-        val heightOfPattern = patternEnd.heightEnd - patternEnd.heightStart
-        dropRocks(remainingRocks, patternEnd.gasJetIndex.nextOrFirstIndex(jetPattern.size), patternEnd.rockShapeIndex.nextOrFirstIndex(shapes.size))
+            remainingRocks.dropWithPatternDetection(pattern.rockShapeIndex.nextOrFirst(rockShapes.size), pattern.gasJetIndex.nextOrFirst(jetPattern.size))
 
-        return (heightOfPattern * (patternRepeats - 1)) + heightOfTower()
+            pattern.height * (patternRepeats - 1) + tower.height()
+        } ?: tower.height()
     }
 
-
-    private fun searchPattern(numberOfRocks: Long): PatternStart {
-        var gasJetIndex = 0
-        var rockShapeIndex = 0
+    private fun Long.dropWithPatternDetection(startRockShape: Int = 0, startGasJet: Int = 0): RockPattern? {
+        var gasJetIndex = startGasJet
+        var rockShapeIndex = startRockShape
         val dropCycles = mutableMapOf<DropCycle, TowerState>()
-        (1..numberOfRocks).forEach { rockNumber ->
-            if (tower.size > 100) {
-                tower = tower.filterKeys { it > heightOfTower() - 30 }.toMutableMap()
-            }
-            gasJetIndex = dropRock(rockShapeIndex, gasJetIndex)
 
-            val dropCycle = DropCycle(rockShapeIndex, gasJetIndex, tower.filterKeys { it > heightOfTower() - 10 }.values.toList())
-            val match = dropCycles[dropCycle]
-            if (match != null) {
-                println("PATTERN detected? $dropCycle")
-                return PatternStart(match.rockNumber, rockNumber, match.heightOfTower, heightOfTower(), rockShapeIndex, gasJetIndex)
-            } else {
-                dropCycles[dropCycle] = TowerState(rockNumber, heightOfTower())
+        (1..this).forEach { rockNumber ->
+            gasJetIndex = dropRock(rockShapes[rockShapeIndex], gasJetIndex)
+
+            val dropCycle = DropCycle(rockShapeIndex, gasJetIndex, tower.topNumberOfLines(10).values.toList())
+            dropCycles.put(dropCycle, TowerState(rockNumber, tower.height()))?.let { match ->
+                println("Pattern detected! $dropCycle")
+                return RockPattern(match.rocks, rockNumber, tower.height() - match.height, rockShapeIndex, gasJetIndex)
             }
 
-            rockShapeIndex = rockShapeIndex.nextOrFirstIndex(shapes.size)
-            gasJetIndex = gasJetIndex.nextOrFirstIndex(jetPattern.size)
+            tower = tower.skimmedIfSize(100)
 
+            rockShapeIndex = rockShapeIndex.nextOrFirst(rockShapes.size)
+            gasJetIndex = gasJetIndex.nextOrFirst(jetPattern.size)
         }
-        error("No pattern detected...")
+        return null
     }
 
-    fun dropRocks(numberOfRocks: Long, gasJet: Int = 0, rockShape: Int = 0): Cave {
-        var gasJetIndex = gasJet
-        var rockShapeIndex = rockShape
 
-        (0 until numberOfRocks).forEach { _ ->
-            gasJetIndex = dropRock(rockShapeIndex, gasJetIndex)
-
-            rockShapeIndex = rockShapeIndex.nextOrFirstIndex(shapes.size)
-            gasJetIndex = gasJetIndex.nextOrFirstIndex(jetPattern.size)
-        }
-        return this
-    }
-
-    private fun dropRock(rockShapeIndex: Int, startGasJetIndex: Int): Int {
+    private fun dropRock(rockShape: RockShape, startGasJetIndex: Int): Int {
         var gasJetIndex = startGasJetIndex
-        var currentHeight = heightOfTower() + 4
-        var movingRock = shapes[rockShapeIndex].caveLines
+        var currentHeight = tower.height() + 4
+        var movingRock = rockShape.caveLines
         var cameToRest = false
-        while (!cameToRest) {
-            val blownRock = movingRock.hitWithGasJet(jetPattern[gasJetIndex]).let {
-                if (it.overlapsTower(tower, currentHeight)) movingRock else it
-            }
 
-            if (currentHeight <= heightOfTower() + 1 && blownRock.overlapsTower(tower, currentHeight - 1)) {
+        while (!cameToRest) {
+            val blownRock = movingRock.hitWithGasJet(jetPattern[gasJetIndex], currentHeight)
+
+            if (currentHeight <= tower.height() + 1 && blownRock.overlapsTower(currentHeight - 1)) {
                 addRockInRest(blownRock, currentHeight)
                 cameToRest = true
             } else {
-                currentHeight -= 1
-                gasJetIndex = gasJetIndex.nextOrFirstIndex(jetPattern.size)
                 movingRock = blownRock
+                currentHeight -= 1
+                gasJetIndex = gasJetIndex.nextOrFirst(jetPattern.size)
             }
         }
 
         return gasJetIndex
     }
 
-    private fun addRockInRest(movingRock: Rock, currentHeight: Long) {
+    private fun addRockInRest(movingRock: Rock, rockBottomHeight: Long) {
         movingRock.forEachIndexed { index, rockLine ->
-            tower[currentHeight + index] = tower[currentHeight + index]?.mergeWith(rockLine) ?: rockLine
+            tower[rockBottomHeight + index] = tower[rockBottomHeight + index]?.mergeWith(rockLine) ?: rockLine
         }
     }
 
-    private fun Rock.hitWithGasJet(gasJet: GasJet) = when (gasJet) {
-        LEFT -> if (map { it.first() }.any { it }) this else map { it.shiftLeft() }
-        RIGHT -> if (map { it.last() }.any { it }) this else map { it.shiftRight() }
-    }
+    private fun Rock.hitWithGasJet(gasJet: GasJet, currentHeight: Long): Rock =
+            when (gasJet) {
+                LEFT -> moveLeftIfNoWall()
+                RIGHT -> moveRightIfNoWall()
+            }.let { movedRock ->
+                if (movedRock.overlapsTower(currentHeight)) this else movedRock
+            }
 
-    fun heightOfTower() = tower.maxBy { it.key }.key
+    private fun Rock.moveRightIfNoWall() = if (map { it.last() }.any { it }) this else map { listOf(false) + it.dropLast(1) }
 
-    fun visualize() = tower.toSortedMap(compareByDescending { it }).map { line ->
-        line.value.joinToString("") { if (it) "#" else "." }
-    }.joinToString("\n")
+    private fun Rock.moveLeftIfNoWall() = if (map { it.first() }.any { it }) this else map { it.drop(1) + false }
 
-
-    private fun Rock.overlapsTower(tower: Map<Long, CaveLine>, rockBottomAt: Long): Boolean {
-        val towerLinesToCheck = (rockBottomAt..rockBottomAt + this.size).mapNotNull { tower[it] }
-        return towerLinesToCheck.zip(this).any { (rockLine, towerLine) ->
+    private fun Rock.overlapsTower(rockBottomHeight: Long): Boolean {
+        val towerLinesToCheck = mapIndexedNotNull { index, _ -> tower[rockBottomHeight + index] }
+        return this.zip(towerLinesToCheck).any { (rockLine, towerLine) ->
             rockLine overlaps towerLine
         }
     }
 
-    private infix fun CaveLine.overlaps(towerLine: CaveLine) = zip(towerLine).any { (rock, tower) -> rock && tower }
+    private fun RockTower.height() = maxBy { it.key }.key
 
-    private fun CaveLine.mergeWith(rockLine: CaveLine) = zip(rockLine).map { (tower, rock) -> if (rock) true else tower }
+    private fun RockTower.topNumberOfLines(numberOfLines: Int) = filterKeys { it > height() - numberOfLines }
 
-    private fun CaveLine.shiftLeft() = this.drop(1) + false
+    private fun RockTower.skimmedIfSize(maxSize: Int) = if (size > maxSize) topNumberOfLines(30).toMutableMap() else this
 
-    private fun CaveLine.shiftRight() = listOf(false) + this.dropLast(1)
+    private fun Int.nextOrFirst(total: Int): Int = if (this + 1 >= total) 0 else this + 1
 
-    private fun Int.nextOrFirstIndex(total: Int): Int = if (this + 1 >= total) 0 else this + 1
+    private infix fun CaveLine.overlaps(other: CaveLine) = zip(other).any { (a, b) -> a && b }
+
+    private fun CaveLine.mergeWith(other: CaveLine): CaveLine = zip(other).map { (a, b) -> a || b }
+
+    fun visualize() = tower.toSortedMap(compareByDescending { it }).map { line ->
+        line.value.joinToString("") { if (it) "#" else "." }
+    }.joinToString("\n")
 }
 
 
 typealias CaveLine = List<Boolean>
 typealias Rock = List<CaveLine>
+typealias RockTower = MutableMap<Long, CaveLine>
 
 enum class GasJet { LEFT, RIGHT }
 
 data class DropCycle(val rockShapeIndex: Int, val gasJetIndex: Int, val lines: List<CaveLine>)
-data class PatternStart(val rocksStart: Long, val rocksEnd: Long, val heightStart: Long, val heightEnd: Long, val rockShapeIndex: Int, val gasJetIndex: Int)
-data class TowerState(val rockNumber: Long, val heightOfTower: Long)
+data class TowerState(val rocks: Long, val height: Long)
+data class RockPattern(val rocksStart: Long, val rocksEnd: Long, val height: Long, val rockShapeIndex: Int, val gasJetIndex: Int)
 
 sealed class RockShape {
     abstract val caveLines: Rock
@@ -167,11 +155,10 @@ sealed class RockShape {
     )) : RockShape()
 }
 
-fun String.toJetPattern(): List<GasJet> =
-        this.map {
-            when (it) {
-                '<' -> LEFT
-                '>' -> RIGHT
-                else -> error("Unknown gas jet found: $it")
-            }
-        }
+fun String.toJetPattern(): List<GasJet> = this.map {
+    when (it) {
+        '<' -> LEFT
+        '>' -> RIGHT
+        else -> error("Unknown gas jet found: $it")
+    }
+}

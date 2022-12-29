@@ -16,7 +16,7 @@ class PyroclasticFlowTest {
         val input = readFile("day17/exampleInput.txt")
         val cave = Cave(input.toJetPattern())
 
-        cave.dropRocks(numberOfRocks,0,0)
+        cave.dropRocks(numberOfRocks)
 
         assertThat(cave.visualize()).isEqualTo(result)
     }
