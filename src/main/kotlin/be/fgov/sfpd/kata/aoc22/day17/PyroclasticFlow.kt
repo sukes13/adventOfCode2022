@@ -50,7 +50,7 @@ data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
     private fun dropRock(rockShape: RockShape, startGasJetIndex: Int): Int {
         var gasJetIndex = startGasJetIndex
         var currentHeight = tower.height() + 4
-        var movingRock = rockShape.caveLines
+        var movingRock = rockShape.startRock
         var cameToRest = false
 
         while (!cameToRest) {
@@ -123,32 +123,32 @@ data class TowerState(val rocks: Long, val height: Long)
 data class RockPattern(val rocksStart: Long, val rocksEnd: Long, val height: Long, val rockShapeIndex: Int, val gasJetIndex: Int)
 
 sealed class RockShape {
-    abstract val caveLines: Rock
+    abstract val startRock: Rock
 
-    data class HorizontalLine(override val caveLines: Rock = listOf(
+    data class HorizontalLine(override val startRock: Rock = listOf(
             listOf(false, false, true, true, true, true, false)
     )) : RockShape()
 
-    data class PlusSign(override val caveLines: Rock = listOf(
+    data class PlusSign(override val startRock: Rock = listOf(
             listOf(false, false, false, true, false, false, false),
             listOf(false, false, true, true, true, false, false),
             listOf(false, false, false, true, false, false, false)
     )) : RockShape()
 
-    data class MirroredL(override val caveLines: Rock = listOf(
+    data class MirroredL(override val startRock: Rock = listOf(
             listOf(false, false, true, true, true, false, false),
             listOf(false, false, false, false, true, false, false),
             listOf(false, false, false, false, true, false, false),
     )) : RockShape()
 
-    data class VerticalLine(override val caveLines: Rock = listOf(
+    data class VerticalLine(override val startRock: Rock = listOf(
             listOf(false, false, true, false, false, false, false),
             listOf(false, false, true, false, false, false, false),
             listOf(false, false, true, false, false, false, false),
             listOf(false, false, true, false, false, false, false)
     )) : RockShape()
 
-    data class Rectangle(override val caveLines: Rock = listOf(
+    data class Rectangle(override val startRock: Rock = listOf(
             listOf(false, false, true, true, false, false, false),
             listOf(false, false, true, true, false, false, false),
     )) : RockShape()
