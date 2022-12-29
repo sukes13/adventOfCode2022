@@ -39,14 +39,13 @@ data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
                 return RockPattern(match.rocks, rockNumber, tower.height() - match.height, rockShapeIndex, gasJetIndex)
             }
 
-            tower = tower.skimmedIfSize(100)
+            tower = tower.skimmedIfSize(100).toMutableMap()
 
             rockShapeIndex = rockShapeIndex.nextOrFirst(rockShapes.size)
             gasJetIndex = gasJetIndex.nextOrFirst(jetPattern.size)
         }
         return null
     }
-
 
     private fun dropRock(rockShape: RockShape, startGasJetIndex: Int): Int {
         var gasJetIndex = startGasJetIndex
@@ -57,7 +56,7 @@ data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
         while (!cameToRest) {
             val blownRock = movingRock.hitWithGasJet(jetPattern[gasJetIndex], currentHeight)
 
-            if (currentHeight <= tower.height() + 1 && blownRock.overlapsTower(currentHeight - 1)) {
+            if (currentHeight <= tower.height() + 1 && blownRock overlapsTowerAt currentHeight - 1) {
                 addRockInRest(blownRock, currentHeight)
                 cameToRest = true
             } else {
@@ -76,30 +75,30 @@ data class Cave(val jetPattern: List<GasJet>, val width: Int = 7) {
         }
     }
 
+    private fun RockTower.height() = maxBy { it.key }.key
+
+    private fun RockTower.topNumberOfLines(numberOfLines: Int) = filterKeys { it > height() - numberOfLines }
+
+    private fun RockTower.skimmedIfSize(maxSize: Int) = if (size > maxSize) topNumberOfLines(30) else this
+
     private fun Rock.hitWithGasJet(gasJet: GasJet, currentHeight: Long): Rock =
             when (gasJet) {
                 LEFT -> moveLeftIfNoWall()
                 RIGHT -> moveRightIfNoWall()
             }.let { movedRock ->
-                if (movedRock.overlapsTower(currentHeight)) this else movedRock
+                if (movedRock overlapsTowerAt currentHeight) this else movedRock
             }
 
     private fun Rock.moveRightIfNoWall() = if (map { it.last() }.any { it }) this else map { listOf(false) + it.dropLast(1) }
 
     private fun Rock.moveLeftIfNoWall() = if (map { it.first() }.any { it }) this else map { it.drop(1) + false }
 
-    private fun Rock.overlapsTower(rockBottomHeight: Long): Boolean {
-        val towerLinesToCheck = mapIndexedNotNull { index, _ -> tower[rockBottomHeight + index] }
-        return this.zip(towerLinesToCheck).any { (rockLine, towerLine) ->
-            rockLine overlaps towerLine
-        }
-    }
-
-    private fun RockTower.height() = maxBy { it.key }.key
-
-    private fun RockTower.topNumberOfLines(numberOfLines: Int) = filterKeys { it > height() - numberOfLines }
-
-    private fun RockTower.skimmedIfSize(maxSize: Int) = if (size > maxSize) topNumberOfLines(30).toMutableMap() else this
+    private infix fun Rock.overlapsTowerAt(rockBottomHeight: Long) =
+            filterIndexed { index, rockLine ->
+                tower[rockBottomHeight + index]?.let { towerLine ->
+                    rockLine overlaps towerLine
+                } ?: false
+            }.isNotEmpty()
 
     private fun Int.nextOrFirst(total: Int): Int = if (this + 1 >= total) 0 else this + 1
 
