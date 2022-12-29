@@ -19,17 +19,17 @@ class SolveDay17Test {
         assertThat(part1(input)).isEqualTo(3147)
     }
 
-//    @Test
-//    fun `example input part 2`() {
-//        val input = readFile("day17/exampleInput.txt")
-//        assertThat(part2(input)).isEqualTo(1514285714288L)
-//    }
-//
-//    @Test
-//    fun `actual input part 2`() {
-//        val input = readFile("day17/input.txt")
-//        assertThat(part2(input)).isEqualTo(10457634860779L)
-//    }
+    @Test
+    fun `example input part 2`() {
+        val input = readFile("day17/exampleInput.txt")
+        assertThat(part2(input)).isEqualTo(1514285714288L)
+    }
+
+    @Test
+    fun `actual input part 2`() {
+        val input = readFile("day17/input.txt")
+        assertThat(part2(input)).isEqualTo(1532163742758L)
+    }
 
 }
 
