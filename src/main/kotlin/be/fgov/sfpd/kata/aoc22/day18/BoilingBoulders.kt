@@ -21,14 +21,12 @@ private fun List<Cube>.dijkstraScanForOuterSidesOf(lavaCubes: List<Cube>): Int {
         val current = queue.filterNot { it.value == Int.MAX_VALUE }.minByOrNull { it.value }
                 ?: return outerSides
 
-        queue.remove(current.key)
-
         current.key.accessibleNeighbours(queue).forEach { neighbour ->
             when (neighbour) {
                 in lavaCubes -> outerSides += 1
                 else -> queue[neighbour] = current.value + 1
             }
-        }
+        }.also { queue.remove(current.key) }
     }
 
     error("No lava-cubes found...")
