@@ -18,8 +18,7 @@ private fun List<Cube>.dijkstraScanForOuterSidesOf(lavaCubes: List<Cube>): Int {
     var outerSides = 0
 
     while (queue.isNotEmpty()) {
-        val current = queue.filterNot { it.value == Int.MAX_VALUE }
-                .minByOrNull { it.value }
+        val current = queue.filterNot { it.value == Int.MAX_VALUE }.minByOrNull { it.value }
                 ?: return outerSides
 
         queue.remove(current.key)
