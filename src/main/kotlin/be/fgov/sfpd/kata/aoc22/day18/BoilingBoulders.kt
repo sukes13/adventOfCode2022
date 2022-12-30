@@ -15,7 +15,6 @@ private fun List<Cube>.dijkstraScanForOuterSidesOf(lavaCubes: List<Cube>): Int {
     val queue = associate { lavaCube ->
         if (lavaCube == first()) lavaCube to 0 else lavaCube to Int.MAX_VALUE
     }.toMutableMap()
-
     var outerSides = 0
 
     while (queue.isNotEmpty()) {
@@ -25,13 +24,12 @@ private fun List<Cube>.dijkstraScanForOuterSidesOf(lavaCubes: List<Cube>): Int {
 
         queue.remove(current.key)
 
-        current.key.accessibleNeighbours(queue)
-                .forEach { neighbour ->
-                    when (neighbour) {
-                        in lavaCubes -> outerSides += 1
-                        else -> queue[neighbour] = current.value + 1
-                    }
-                }
+        current.key.accessibleNeighbours(queue).forEach { neighbour ->
+            when (neighbour) {
+                in lavaCubes -> outerSides += 1
+                else -> queue[neighbour] = current.value + 1
+            }
+        }
     }
 
     error("No lava-cubes found...")
