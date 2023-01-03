@@ -24,7 +24,7 @@ class SolveDay19Test {
 //        val input = readFile("day19/exampleInput.txt")
 //        assertThat(part2(input)).isEqualTo(56)
 //    }
-//
+
 //    @Test
 //    fun `actual input part 2`() {
 //        val input = readFile("day19/input.txt")
