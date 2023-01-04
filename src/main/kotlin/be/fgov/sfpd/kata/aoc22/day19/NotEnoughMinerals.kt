@@ -6,6 +6,7 @@ import java.util.*
 
 
 fun part1(input: String) = input.toBlueprints().sumOf { it.id * it.maxGeodes(24, 20) }
+
 fun part2(input: String) = input.toBlueprints().take(3).map { it.maxGeodes(32, 24) }.reduce { a, b -> a * b }
 
 private val startState = MineState(0, listOf(0, 0, 0, 0), listOf(1, 0, 0, 0))
@@ -18,32 +19,32 @@ data class Blueprint(val id: Int, val robots: List<MineRobot>) {
                 robots.filterIsInstance<GeodeRobot>().single().obsidian,
                 minutes
         )
-        return listOf(startState).findMaximumGeodes(minutes, robots, maxRobotsNeeded, geodeRobotCorrection)
+        return startState.findGeodesAtAllEndStatesFor(minutes, robots, maxRobotsNeeded, geodeRobotCorrection).max()
     }
-}
-
-private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<MineRobot>, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int): Int {
-    val states: Queue<MineState> = LinkedList(this)
-    var maxGeodes = 0
-
-    while (states.isNotEmpty()) {
-        val current = states.poll()
-
-        if (current.minute < minutes) {
-            robotTypes.filterIndexed { index, type -> current.buildIsUseful(index, type, maxRobotsNeeded, geodeRobotCorrection) }
-                    .map { current.nextStateFor(it, minutes) }
-                    .also { states.addAll(it) }
-        } else {
-            maxGeodes = maxOf(maxGeodes, current.minerals.last())
-        }
-    }
-
-    return maxGeodes
 }
 
 data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers: List<Int>) {
 
-    fun nextStateFor(robotType: MineRobot, minutes: Int): MineState {
+    fun findGeodesAtAllEndStatesFor(minutes: Int, robotTypes: List<MineRobot>, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int): List<Int> {
+        val states: Queue<MineState> = LinkedList(listOf(this))
+        val maxGeodes = mutableListOf<Int>()
+
+        while (states.isNotEmpty()) {
+            val current = states.poll()
+
+            if (current.minute < minutes) {
+                robotTypes.filterIndexed { index, type -> current.buildIsUseful(index, type, maxRobotsNeeded, geodeRobotCorrection) }
+                        .map { current.nextStateFor(it, minutes) }
+                        .also { states.addAll(it) }
+            } else {
+                maxGeodes.add(current.minerals.last())
+            }
+        }
+
+        return maxGeodes.toList()
+    }
+
+    private fun nextStateFor(robotType: MineRobot, minutes: Int): MineState {
         val waitTime = minutesToWaitFor(robotType) + 1
         return if (minute + waitTime < minutes) {
             copy(
@@ -57,7 +58,7 @@ data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers
         )
     }
 
-    fun buildIsUseful(index: Int, robotType: MineRobot, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int) =
+    private fun buildIsUseful(index: Int, robotType: MineRobot, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int) =
             robotType.buildPossibleFor(robotsNumbers)
                     && robotsNumbers[index] < maxRobotsNeeded[index]
                     && if (minute > geodeRobotCorrection) robotType is GeodeRobot else true
