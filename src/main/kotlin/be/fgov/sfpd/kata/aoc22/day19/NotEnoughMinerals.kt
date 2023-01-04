@@ -5,25 +5,24 @@ import be.fgov.sfpd.kata.aoc22.mapLines
 import java.util.*
 
 
-fun part1(input: String) = input.toBlueprints().sumOf { it.id * it.maxGeodes(24) }
-
-fun part2(input: String) = input.toBlueprints().first().maxGeodes(32)
+fun part1(input: String) = input.toBlueprints().sumOf { it.id * it.maxGeodes(24, 20) }
+fun part2(input: String) = input.toBlueprints().take(3).map { it.maxGeodes(32, 24) }.reduce { a, b -> a * b }
 
 private val startState = MineState(0, listOf(0, 0, 0, 0), listOf(1, 0, 0, 0))
 
 data class Blueprint(val id: Int, val robots: List<MineRobot>) {
-    fun maxGeodes(minutes: Int): Int {
+    fun maxGeodes(minutes: Int, geodeRobotCorrection: Int): Int {
         val maxNeeded = listOf(
                 robots.maxOf { it.ore },
                 robots.filterIsInstance<ObsidianRobot>().single().clay,
                 robots.filterIsInstance<GeodeRobot>().single().obsidian,
                 Int.MAX_VALUE
         )
-        return listOf(startState).findMaximumGeodes(minutes, robots, maxNeeded)
+        return listOf(startState).findMaximumGeodes(minutes, robots, maxNeeded, geodeRobotCorrection)
     }
 }
 
-private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<MineRobot>, maxNeeded: List<Int>): Int {
+private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<MineRobot>, maxNeeded: List<Int>, geodeRobotCorrection: Int): Int {
     val states: Queue<MineState> = LinkedList(this)
     var maxGeodes = 0
 
@@ -31,7 +30,7 @@ private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<Min
         val current = states.poll()
 
         if (current.minute < minutes) {
-            robotTypes.filterIndexed { index, type -> type.buildPossibleFor(current.robotsNumbers) && current.robotsNumbers[index] < maxNeeded[index] }
+            robotTypes.filterIndexed { index, type -> current.buildIsUseful(index, type, maxNeeded, geodeRobotCorrection) }
                     .map { current.nextStateFor(it, minutes) }
                     .also { states.addAll(it) }
         } else {
@@ -59,12 +58,18 @@ data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers
         )
     }
 
+    fun buildIsUseful(index: Int, robotType: MineRobot, maxNeeded: List<Int>, geodeRobotCorrection: Int) =
+            robotType.buildPossibleFor(robotsNumbers)
+                    && robotsNumbers[index] < maxNeeded[index]
+                    && if (minute > geodeRobotCorrection) robotType is GeodeRobot else true
+
     private fun minutesToWaitFor(robotType: MineRobot) = robotType.cost.mapIndexed { index, cost ->
         if (cost > 0) {
             val needed = cost - minerals[index]
-            if (needed > 0) {
-                (needed / robotsNumbers[index]) + if (needed % robotsNumbers[index] == 0) 0 else 1
-            } else 0
+            when {
+                needed > 0 -> (needed / robotsNumbers[index]) + if (needed % robotsNumbers[index] == 0) 0 else 1
+                else -> 0
+            }
         } else 0
     }.max()
 
@@ -83,30 +88,25 @@ data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers
 sealed class MineRobot(val inventoryIndex: Int) {
     abstract val ore: Int
     abstract val cost: List<Int>
-    abstract fun canBuildIf(minerals: List<Int>): Boolean
     abstract fun buildPossibleFor(robots: List<Int>): Boolean
 
     data class OreRobot(override val ore: Int) : MineRobot(0) {
         override val cost: List<Int> = listOf(ore, 0, 0, 0)
-        override fun canBuildIf(minerals: List<Int>) = minerals[0] >= ore
         override fun buildPossibleFor(robots: List<Int>) = robots[0] > 0
     }
 
     data class ClayRobot(override val ore: Int) : MineRobot(1) {
         override val cost: List<Int> = listOf(ore, 0, 0, 0)
-        override fun canBuildIf(minerals: List<Int>) = minerals[0] >= ore
         override fun buildPossibleFor(robots: List<Int>) = robots[0] > 0
     }
 
     data class ObsidianRobot(override val ore: Int, val clay: Int) : MineRobot(2) {
         override val cost: List<Int> = listOf(ore, clay, 0, 0)
-        override fun canBuildIf(minerals: List<Int>) = minerals[0] >= ore && minerals[1] >= clay
         override fun buildPossibleFor(robots: List<Int>) = robots[0] > 0 && robots[1] > 0
     }
 
     data class GeodeRobot(override val ore: Int, val obsidian: Int) : MineRobot(3) {
         override val cost: List<Int> = listOf(ore, 0, obsidian, 0)
-        override fun canBuildIf(minerals: List<Int>) = minerals[0] >= ore && minerals[2] >= obsidian
         override fun buildPossibleFor(robots: List<Int>) = robots[0] > 0 && robots[2] > 0
     }
 }

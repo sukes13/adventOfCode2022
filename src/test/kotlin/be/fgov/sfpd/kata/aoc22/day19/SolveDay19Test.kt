@@ -19,17 +19,19 @@ class SolveDay19Test {
         assertThat(part1(input)).isEqualTo(817)
     }
 
-//    @Test
-//    fun `example input part 2`() {
-//        val input = readFile("day19/exampleInput.txt")
-//        assertThat(part2(input)).isEqualTo(56)
-//    }
+    @Test
+    fun `example input part 2`() {
+        val input = readFile("day19/exampleInput.txt")
+        val actual = input.toBlueprints().last().maxGeodes(32,22)
 
-//    @Test
-//    fun `actual input part 2`() {
-//        val input = readFile("day19/input.txt")
-//        assertThat(part2(input)).isEqualTo(1980)
-//    }
+        assertThat(actual).isEqualTo(62)
+    }
+
+    @Test
+    fun `actual input part 2`() {
+        val input = readFile("day19/input.txt")
+        assertThat(part2(input)).isEqualTo(4216)
+    }
 
 }
 
