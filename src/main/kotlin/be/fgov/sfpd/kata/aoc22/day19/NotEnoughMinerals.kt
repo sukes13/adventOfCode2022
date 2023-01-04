@@ -12,17 +12,17 @@ private val startState = MineState(0, listOf(0, 0, 0, 0), listOf(1, 0, 0, 0))
 
 data class Blueprint(val id: Int, val robots: List<MineRobot>) {
     fun maxGeodes(minutes: Int, geodeRobotCorrection: Int): Int {
-        val maxNeeded = listOf(
+        val maxRobotsNeeded = listOf(
                 robots.maxOf { it.ore },
                 robots.filterIsInstance<ObsidianRobot>().single().clay,
                 robots.filterIsInstance<GeodeRobot>().single().obsidian,
-                Int.MAX_VALUE
+                minutes
         )
-        return listOf(startState).findMaximumGeodes(minutes, robots, maxNeeded, geodeRobotCorrection)
+        return listOf(startState).findMaximumGeodes(minutes, robots, maxRobotsNeeded, geodeRobotCorrection)
     }
 }
 
-private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<MineRobot>, maxNeeded: List<Int>, geodeRobotCorrection: Int): Int {
+private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<MineRobot>, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int): Int {
     val states: Queue<MineState> = LinkedList(this)
     var maxGeodes = 0
 
@@ -30,7 +30,7 @@ private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<Min
         val current = states.poll()
 
         if (current.minute < minutes) {
-            robotTypes.filterIndexed { index, type -> current.buildIsUseful(index, type, maxNeeded, geodeRobotCorrection) }
+            robotTypes.filterIndexed { index, type -> current.buildIsUseful(index, type, maxRobotsNeeded, geodeRobotCorrection) }
                     .map { current.nextStateFor(it, minutes) }
                     .also { states.addAll(it) }
         } else {
@@ -40,7 +40,6 @@ private fun List<MineState>.findMaximumGeodes(minutes: Int, robotTypes: List<Min
 
     return maxGeodes
 }
-
 
 data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers: List<Int>) {
 
@@ -58,20 +57,19 @@ data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers
         )
     }
 
-    fun buildIsUseful(index: Int, robotType: MineRobot, maxNeeded: List<Int>, geodeRobotCorrection: Int) =
+    fun buildIsUseful(index: Int, robotType: MineRobot, maxRobotsNeeded: List<Int>, geodeRobotCorrection: Int) =
             robotType.buildPossibleFor(robotsNumbers)
-                    && robotsNumbers[index] < maxNeeded[index]
+                    && robotsNumbers[index] < maxRobotsNeeded[index]
                     && if (minute > geodeRobotCorrection) robotType is GeodeRobot else true
 
-    private fun minutesToWaitFor(robotType: MineRobot) = robotType.cost.mapIndexed { index, cost ->
-        if (cost > 0) {
-            val needed = cost - minerals[index]
-            when {
-                needed > 0 -> (needed / robotsNumbers[index]) + if (needed % robotsNumbers[index] == 0) 0 else 1
-                else -> 0
-            }
-        } else 0
-    }.max()
+    private fun minutesToWaitFor(robotType: MineRobot) =
+            robotType.cost.mapIndexed { index, cost ->
+                val needed = cost - minerals[index]
+                when {
+                    needed > 0 -> (needed / robotsNumbers[index]) + if (needed % robotsNumbers[index] == 0) 0 else 1
+                    else -> 0
+                }
+            }.max()
 
     private fun List<Int>.payForBuildOf(robotType: MineRobot) = zip(robotType.cost) { mineral, cost -> mineral - cost }
 
@@ -83,7 +81,6 @@ data class MineState(val minute: Int, val minerals: List<Int>, val robotsNumbers
         if (index == robotType.inventoryIndex) robot + 1 else robot
     }
 }
-
 
 sealed class MineRobot(val inventoryIndex: Int) {
     abstract val ore: Int
