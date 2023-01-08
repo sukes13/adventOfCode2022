@@ -12,10 +12,10 @@ fun part2(input: String) = input.toMathMonkeys().prepareYellingFor("root", "humn
 private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<MathMonkey> {
     val rootMonkey = single { it.name == root } as OperationMonkey
 
-    val yellAttemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
-    val yellAttemptForMonkey2 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey2)
-    val (rootYell, _) = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey2 else yellAttemptForMonkey1
-    val (_, valueMonkeysAfterAttempt) = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey1 else yellAttemptForMonkey2
+    val attemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
+    val attemptForMonkey2 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey2)
+    val (rootYell, _) = if (attemptForMonkey1.first == -1L) attemptForMonkey2 else attemptForMonkey1
+    val (_, valueMonkeysAfterAttempt) = if (attemptForMonkey1.first == -1L) attemptForMonkey1 else attemptForMonkey2
 
     return filterIsInstance<OperationMonkey>().reverseOperations()
             .plus(valueMonkeysAfterAttempt)
