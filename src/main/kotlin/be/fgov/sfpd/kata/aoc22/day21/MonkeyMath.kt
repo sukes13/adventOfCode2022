@@ -13,16 +13,14 @@ private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<M
     val rootMonkey = single { it.name == root } as OperationMonkey
 
     val yellAttemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
-    val yellAttemptForMonkey2 = filter { it.name != me }.findYellOf( rootMonkey.nameMonkey2)
-    val solvedRootYell = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey2 else yellAttemptForMonkey1
-    val unSolvedRootYell = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey1 else yellAttemptForMonkey2
-    val leftOverOperationMonkeys = solvedRootYell.second.filterIsInstance<OperationMonkey>()
-    val valuesAfterAttempt = unSolvedRootYell.second.filterIsInstance<ValueMonkey>()
+    val yellAttemptForMonkey2 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey2)
+    val (rootYell, _) = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey2 else yellAttemptForMonkey1
+    val (_, valueMonkeysAfterAttempt) = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey1 else yellAttemptForMonkey2
 
-    return leftOverOperationMonkeys.reverseOperations()
-            .plus(valuesAfterAttempt)
-            .plus(ValueMonkey(rootMonkey.nameMonkey1, solvedRootYell.first))
-            .plus(ValueMonkey(rootMonkey.nameMonkey2, solvedRootYell.first))
+    return filterIsInstance<OperationMonkey>().reverseOperations()
+            .plus(valueMonkeysAfterAttempt)
+            .plus(ValueMonkey(rootMonkey.nameMonkey1, rootYell))
+            .plus(ValueMonkey(rootMonkey.nameMonkey2, rootYell))
 }
 
 fun List<MathMonkey>.findYellOf(targetMonkey: String): Pair<Long, List<MathMonkey>> {
@@ -46,16 +44,17 @@ fun List<MathMonkey>.findYellOf(targetMonkey: String): Pair<Long, List<MathMonke
 
 private fun List<OperationMonkey>.reverseOperations(): List<MathMonkey> {
     return flatMap { operationMonkey ->
-        val newForMonkey1 =
-                OperationMonkey(operationMonkey.nameMonkey1, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey2, operator =
-                when (operationMonkey.operator) {
+        val newForMonkey1 = OperationMonkey(name = operationMonkey.nameMonkey1,
+                nameMonkey1 = operationMonkey.name,
+                nameMonkey2 = operationMonkey.nameMonkey2,
+                operator = when (operationMonkey.operator) {
                     PLUS -> MINUS
                     MINUS -> PLUS
                     MULTIPLY -> DIVIDE
                     DIVIDE -> MULTIPLY
                 })
 
-        val curr = OperationMonkey(operationMonkey.nameMonkey2, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey1, operator = PLUS)
+        val curr = OperationMonkey(name = operationMonkey.nameMonkey2, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey1, operator = PLUS)
         val newForMonkey2 = when (operationMonkey.operator) {
             PLUS -> curr.copy(operator = MINUS)
             MINUS -> curr.copy(nameMonkey1 = curr.nameMonkey2, nameMonkey2 = curr.nameMonkey1, operator = MINUS)
