@@ -44,9 +44,7 @@ private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<M
 
 private fun List<OperationMonkey>.reverseOperations(): List<OperationMonkey> {
     return flatMap { operationMonkey ->
-        val newForMonkey1 = OperationMonkey(name = operationMonkey.nameMonkey1,
-                nameMonkey1 = operationMonkey.name,
-                nameMonkey2 = operationMonkey.nameMonkey2,
+        val newForMonkey1 = OperationMonkey(name = operationMonkey.nameMonkey1, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey2,
                 operator = when (operationMonkey.operator) {
                     PLUS -> MINUS
                     MINUS -> PLUS
