@@ -5,23 +5,10 @@ import be.fgov.sfpd.kata.aoc22.day21.MathMonkey.ValueMonkey
 import be.fgov.sfpd.kata.aoc22.day21.MonkeyOperator.*
 import be.fgov.sfpd.kata.aoc22.mapLines
 
+
 fun part1(input: String) = input.toMathMonkeys().findYellOf("root").first
 
 fun part2(input: String) = input.toMathMonkeys().prepareYellingFor("root", "humn").findYellOf("humn").first
-
-private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<MathMonkey> {
-    val rootMonkey = single { it.name == root } as OperationMonkey
-
-    val attemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
-    val attemptForMonkey2 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey2)
-    val (rootYell, _) = if (attemptForMonkey1.first == -1L) attemptForMonkey2 else attemptForMonkey1
-    val (_, valueMonkeysAfterAttempt) = if (attemptForMonkey1.first == -1L) attemptForMonkey1 else attemptForMonkey2
-
-    return filterIsInstance<OperationMonkey>().reverseOperations()
-            .plus(valueMonkeysAfterAttempt)
-            .plus(ValueMonkey(rootMonkey.nameMonkey1, rootYell))
-            .plus(ValueMonkey(rootMonkey.nameMonkey2, rootYell))
-}
 
 fun List<MathMonkey>.findYellOf(targetMonkey: String): Pair<Long, List<MathMonkey>> {
     val valueMonkeys = filterIsInstance<ValueMonkey>().associate { it.name to it.value }.toMutableMap()
@@ -42,7 +29,20 @@ fun List<MathMonkey>.findYellOf(targetMonkey: String): Pair<Long, List<MathMonke
     return valueMonkeys.filterKeys { it == targetMonkey }.values.single() to operationMonkeys
 }
 
-private fun List<OperationMonkey>.reverseOperations(): List<MathMonkey> {
+private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<MathMonkey> {
+    val rootMonkey = single { it.name == root } as OperationMonkey
+    val attemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
+    val attemptForMonkey2 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey2)
+    val (rootYell, _) = if (attemptForMonkey1.first == -1L) attemptForMonkey2 else attemptForMonkey1
+    val (_, valueMonkeysAfterAttempt) = if (attemptForMonkey1.first == -1L) attemptForMonkey1 else attemptForMonkey2
+
+    return filterIsInstance<OperationMonkey>().reverseOperations()
+            .plus(valueMonkeysAfterAttempt)
+            .plus(ValueMonkey(rootMonkey.nameMonkey1, rootYell))
+            .plus(ValueMonkey(rootMonkey.nameMonkey2, rootYell))
+}
+
+private fun List<OperationMonkey>.reverseOperations(): List<OperationMonkey> {
     return flatMap { operationMonkey ->
         val newForMonkey1 = OperationMonkey(name = operationMonkey.nameMonkey1,
                 nameMonkey1 = operationMonkey.name,
