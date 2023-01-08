@@ -2,24 +2,69 @@ package be.fgov.sfpd.kata.aoc22.day21
 
 import be.fgov.sfpd.kata.aoc22.day21.MathMonkey.OperationMonkey
 import be.fgov.sfpd.kata.aoc22.day21.MathMonkey.ValueMonkey
+import be.fgov.sfpd.kata.aoc22.day21.MonkeyOperator.*
 import be.fgov.sfpd.kata.aoc22.mapLines
 
-fun part1(input: String) = input.toMathMonkeys().findYellOf("root")
+fun part1(input: String) = input.toMathMonkeys().findYellOf("root").first
 
-fun part2(input: String) = 0
+fun part2(input: String) = input.toMathMonkeys().prepareYellingFor("root", "humn").findYellOf("humn").first
 
-fun List<MathMonkey>.findYellOf(targetMonkey: String): Long {
+private fun List<MathMonkey>.prepareYellingFor(root: String, me: String): List<MathMonkey> {
+    val rootMonkey = single { it.name == root } as OperationMonkey
+
+    val yellAttemptForMonkey1 = filter { it.name != me }.findYellOf(rootMonkey.nameMonkey1)
+    val yellAttemptForMonkey2 = filter { it.name != me }.findYellOf( rootMonkey.nameMonkey2)
+    val solvedRootYell = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey2 else yellAttemptForMonkey1
+    val unSolvedRootYell = if (yellAttemptForMonkey1.first == -1L) yellAttemptForMonkey1 else yellAttemptForMonkey2
+    val leftOverOperationMonkeys = solvedRootYell.second.filterIsInstance<OperationMonkey>()
+    val valuesAfterAttempt = unSolvedRootYell.second.filterIsInstance<ValueMonkey>()
+
+    return leftOverOperationMonkeys.reverseOperations()
+            .plus(valuesAfterAttempt)
+            .plus(ValueMonkey(rootMonkey.nameMonkey1, solvedRootYell.first))
+            .plus(ValueMonkey(rootMonkey.nameMonkey2, solvedRootYell.first))
+}
+
+fun List<MathMonkey>.findYellOf(targetMonkey: String): Pair<Long, List<MathMonkey>> {
     val valueMonkeys = filterIsInstance<ValueMonkey>().associate { it.name to it.value }.toMutableMap()
     val operationMonkeys = filterIsInstance<OperationMonkey>().toMutableList()
 
-    while(targetMonkey !in valueMonkeys.keys){
-        operationMonkeys.filter { it.valuesFound(valueMonkeys.keys)}.forEach {
-            valueMonkeys[it.name] = it.operator.executeFor(valueMonkeys[it.nameMonkey1]!!,valueMonkeys[it.nameMonkey2]!!)
-            operationMonkeys.remove(it)
+    while (targetMonkey !in valueMonkeys.keys) {
+        val monkeysThatCanYell = operationMonkeys.filter { it.valuesFound(valueMonkeys.keys) }
+        if (monkeysThatCanYell.isEmpty()) {
+            return -1L to valueMonkeys.map { ValueMonkey(it.key, it.value) }
+        } else {
+            monkeysThatCanYell.forEach {
+                valueMonkeys[it.name] = it.operator.executeFor(valueMonkeys[it.nameMonkey1]!!, valueMonkeys[it.nameMonkey2]!!)
+                operationMonkeys.remove(it)
+            }
         }
     }
 
-    return valueMonkeys.filterKeys { it == targetMonkey }.values.single()
+    return valueMonkeys.filterKeys { it == targetMonkey }.values.single() to operationMonkeys
+}
+
+private fun List<OperationMonkey>.reverseOperations(): List<MathMonkey> {
+    return flatMap { operationMonkey ->
+        val newForMonkey1 =
+                OperationMonkey(operationMonkey.nameMonkey1, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey2, operator =
+                when (operationMonkey.operator) {
+                    PLUS -> MINUS
+                    MINUS -> PLUS
+                    MULTIPLY -> DIVIDE
+                    DIVIDE -> MULTIPLY
+                })
+
+        val curr = OperationMonkey(operationMonkey.nameMonkey2, nameMonkey1 = operationMonkey.name, nameMonkey2 = operationMonkey.nameMonkey1, operator = PLUS)
+        val newForMonkey2 = when (operationMonkey.operator) {
+            PLUS -> curr.copy(operator = MINUS)
+            MINUS -> curr.copy(nameMonkey1 = curr.nameMonkey2, nameMonkey2 = curr.nameMonkey1, operator = MINUS)
+            MULTIPLY -> curr.copy(operator = DIVIDE)
+            DIVIDE -> curr.copy(nameMonkey1 = curr.nameMonkey2, nameMonkey2 = curr.nameMonkey1, operator = DIVIDE)
+        }
+
+        listOf(newForMonkey1, newForMonkey2)
+    }
 }
 
 
@@ -27,7 +72,7 @@ sealed class MathMonkey {
     abstract val name: String
 
     data class ValueMonkey(override val name: String, val value: Long) : MathMonkey()
-    data class OperationMonkey(override val name: String, val nameMonkey1: String, val nameMonkey2: String, val operator: MonkeyOperator) : MathMonkey(){
+    data class OperationMonkey(override val name: String, val nameMonkey1: String, val nameMonkey2: String, val operator: MonkeyOperator) : MathMonkey() {
         fun valuesFound(valueMonkeys: MutableSet<String>) = nameMonkey1 in valueMonkeys && nameMonkey2 in valueMonkeys
     }
 }
@@ -39,7 +84,7 @@ enum class MonkeyOperator(val sign: String, val executeFor: (Long, Long) -> Long
     DIVIDE("/", { a, b -> a / b });
 
     companion object {
-        fun bySign(sign: String) = MonkeyOperator.values().find { it.sign == sign } ?: error("Invalid sign found: $sign")
+        fun bySign(sign: String) = values().find { it.sign == sign } ?: error("Invalid sign found: $sign")
     }
 }
 
