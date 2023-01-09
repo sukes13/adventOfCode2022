@@ -92,7 +92,7 @@ internal fun String.toMathMonkeys(): List<MathMonkey> = mapLines { line ->
     when {
         line.length < 14 -> ValueMonkey(name, leftOver.toLong())
         else -> {
-            val (nameMonkey1, sign, nameMonkey2) = leftOver.trimIndent().split(" ").take(3)
+            val (nameMonkey1, sign, nameMonkey2) = leftOver.split(" ").take(3)
             OperationMonkey(name, nameMonkey1, nameMonkey2, MonkeyOperator.bySign(sign))
         }
     }
