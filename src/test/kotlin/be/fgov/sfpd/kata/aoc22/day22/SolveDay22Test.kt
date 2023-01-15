@@ -21,13 +21,15 @@ class SolveDay22Test {
     @Test
     fun `example input part 2`() {
         val input = readFile("day22/exampleInput.txt")
-        assertThat(part2(input,4,"example")).isEqualTo(5031)
+        val inputType = 4 to cubeSidesChangesExample
+        assertThat(part2(input,inputType)).isEqualTo(5031)
     }
 
     @Test
     fun `actual input part 2`() {
         val input = readFile("day22/input.txt")
-        assertThat(part2(input,50,"actual")).isEqualTo(47525)
+        val inputType = 50 to cubeSidesChangesInput
+        assertThat(part2(input,inputType)).isEqualTo(47525)
     }
 
 }

@@ -13,9 +13,9 @@ import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 fun part1(input: String, sideSize: Int) = input.toBoard(sideSize).tracePath(1).password
 
 var cubeSidesChanges: List<CubeSideChange>? = null
-fun part2(input: String, sideSize: Int, inputType: String): Long {
-    cubeSidesChanges = if(inputType == "example") cubeSidesChangesExample else cubeSidesChangesInput
-    return input.toBoard(sideSize).tracePath(2).password
+fun part2(input: String, inputType: Pair<Int,List<CubeSideChange>>): Long {
+    cubeSidesChanges = inputType.second
+    return input.toBoard(inputType.first).tracePath(2).password
 }
 
 
@@ -53,9 +53,15 @@ data class Explorer(val position: Point, val facing: FacingDirection) {
         val line = tiles.findLineFor(facing, position)
 
         return (1..steps).fold(this) { explorer, _ ->
-            explorer.moveStep(line).let { (explorer, stuck) ->
-                if (stuck) return explorer
-                explorer
+            val nextTile = when (explorer.facing) {
+                NORTH -> line.singleOrNull { it.point.y == explorer.position.y - 1 } ?: line.maxBy { it.point.y }
+                EAST -> line.singleOrNull { it.point.x == explorer.position.x + 1 } ?: line.minBy { it.point.x }
+                SOUTH -> line.singleOrNull { it.point.y == explorer.position.y + 1 } ?: line.minBy { it.point.y }
+                WEST -> line.singleOrNull { it.point.x == explorer.position.x - 1 } ?: line.maxBy { it.point.x }
+            }
+            when (nextTile.type) {
+                EMPTY -> copy(position = nextTile.point, facing = facing)
+                else -> return explorer
             }
         }
     }
@@ -67,38 +73,35 @@ data class Explorer(val position: Point, val facing: FacingDirection) {
         var currentLine = currentSide.findLineFor(currentFacing, position)
 
         return (1..steps).fold(this) { explorer, _ ->
-            var nextTile = when (currentFacing) {
-                NORTH -> currentLine.singleOrNull { it.point.y == explorer.position.y - 1 }
-                EAST -> currentLine.singleOrNull { it.point.x == explorer.position.x + 1 }
-                SOUTH -> currentLine.singleOrNull { it.point.y == explorer.position.y + 1 }
-                WEST -> currentLine.singleOrNull { it.point.x == explorer.position.x - 1 }
-            }
+            var nextTile = currentLine.nextTileFor(currentFacing, explorer.position)
 
             if (nextTile == null) {
-                val sidesChange = cubeSidesChanges!!.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
-                val newSide = board.tiles.filter { it.sideNr == sidesChange.newSideNr }
-                val distFromEdge = currentSide.findDistanceToEdgeFor(currentFacing, explorer.position, sidesChange.flip, board.sideSize)
-                val newPosition = newSide.newPositionFor(sidesChange.newDirection, distFromEdge)
+                val sideChange = cubeSidesChanges!!.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
+                val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
+                val distFromEdge = currentSide.findDistanceToEdgeFor(currentFacing, explorer.position, sideChange.flip, board.sideSize)
+                val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distFromEdge)
 
-                currentLine = newSide.findLineFor(sidesChange.newDirection, newPosition)
-                currentFacing = sidesChange.newDirection
+                currentLine = newSide.findLineFor(sideChange.newDirection, newPosition)
+                currentFacing = sideChange.newDirection
                 nextTile = newSide.single { it.point == newPosition }
             }
 
-            (if (nextTile.type == EMPTY) {
-                println("Moving to position ${nextTile}, facing: $currentFacing ")
-                explorer.copy(position = nextTile.point, facing = currentFacing) to false
-            } else {
-                println("Blocked at ${nextTile}, facing: $currentFacing ")
-                explorer to true
-            }).let { (explorer, stuck) ->
-                if (stuck) return explorer
-                explorer
+            when (nextTile.type) {
+                EMPTY -> explorer.copy(position = nextTile.point, facing = currentFacing)
+                else -> return explorer
             }
         }
     }
 
-    private fun List<BoardTile>.newPositionFor(facing: FacingDirection, distFromEdge: Int) =
+    private fun List<BoardTile>.nextTileFor(currentFacing: FacingDirection, position: Point) =
+            when (currentFacing) {
+                NORTH -> singleOrNull { it.point.y == position.y - 1 }
+                EAST -> singleOrNull { it.point.x == position.x + 1 }
+                SOUTH -> singleOrNull { it.point.y == position.y + 1 }
+                WEST -> singleOrNull { it.point.x == position.x - 1 }
+            }
+
+    private fun List<BoardTile>.enteringPositionFor(facing: FacingDirection, distFromEdge: Int) =
             when (facing) {
                 NORTH -> Point(x = minBy { it.point.x }.point.x + distFromEdge, y = maxBy { it.point.y }.point.y)
                 EAST -> Point(x = minBy { it.point.x }.point.x, y = minBy { it.point.y }.point.y + distFromEdge)
@@ -117,22 +120,7 @@ data class Explorer(val position: Point, val facing: FacingDirection) {
     private fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
             if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
 
-    private fun moveStep(line: List<BoardTile>): Pair<Explorer, Boolean> {
-        val nextTile = when (facing) {
-            NORTH -> line.singleOrNull { it.point.y == position.y - 1 } ?: line.maxBy { it.point.y }
-            EAST -> line.singleOrNull { it.point.x == position.x + 1 } ?: line.minBy { it.point.x }
-            SOUTH -> line.singleOrNull { it.point.y == position.y + 1 } ?: line.minBy { it.point.y }
-            WEST -> line.singleOrNull { it.point.x == position.x - 1 } ?: line.maxBy { it.point.x }
-        }
-        return if (nextTile.type == EMPTY) {
-            copy(position = nextTile.point) to false
-        } else {
-            this to true
-        }
-    }
 }
-
-data class CubeSideChange(val sideNr: Int, val newSideNr: Int, val oldDirection: FacingDirection, val newDirection: FacingDirection, val flip: Boolean)
 
 enum class TileType { WALL, EMPTY }
 
@@ -158,7 +146,9 @@ enum class FacingDirection(val score: Int) {
     }
 }
 
-sealed class BoardCommand() {
+data class CubeSideChange(val sideNr: Int, val newSideNr: Int, val oldDirection: FacingDirection, val newDirection: FacingDirection, val flip: Boolean)
+
+sealed class BoardCommand {
     data class TurnCommand(val direction: TurnDirection) : BoardCommand()
     data class MoveCommand(val steps: Int) : BoardCommand()
 }
@@ -220,66 +210,3 @@ private fun List<BoardTile>.tileOnSide(topLeft: Point, sideSize: Int) =
         filter { it.point.x in (topLeft.x until topLeft.x + sideSize) && it.point.y in (topLeft.y until topLeft.y + sideSize) }
 
 
-val cubeSidesChangesExample = listOf(
-        CubeSideChange(1, 2, NORTH, SOUTH, true),
-        CubeSideChange(1, 4, SOUTH, SOUTH, false),
-        CubeSideChange(1, 6, EAST, WEST, true),
-        CubeSideChange(1, 3, WEST, SOUTH, false),
-
-        CubeSideChange(2, 1, NORTH, SOUTH, true),
-        CubeSideChange(2, 5, SOUTH, NORTH, true),
-        CubeSideChange(2, 6, WEST, NORTH, false),
-        CubeSideChange(2, 3, EAST, EAST, false),
-
-        CubeSideChange(3, 1, NORTH, EAST, false),
-        CubeSideChange(3, 5, SOUTH, EAST, true),
-        CubeSideChange(3, 2, WEST, WEST, false),
-        CubeSideChange(3, 4, EAST, EAST, true),
-
-        CubeSideChange(4, 1, NORTH, NORTH, false),
-        CubeSideChange(4, 5, SOUTH, SOUTH, false),
-        CubeSideChange(4, 3, WEST, WEST, false),
-        CubeSideChange(4, 6, EAST, SOUTH, true),
-
-        CubeSideChange(5, 4, NORTH, NORTH, false),
-        CubeSideChange(5, 2, SOUTH, NORTH, true),
-        CubeSideChange(5, 3, WEST, NORTH, true),
-        CubeSideChange(5, 6, EAST, EAST, false),
-
-        CubeSideChange(6, 4, NORTH, WEST, true),
-        CubeSideChange(6, 2, SOUTH, EAST, true),
-        CubeSideChange(6, 5, WEST, WEST, false),
-        CubeSideChange(6, 1, EAST, WEST, false),
-)
-
-val cubeSidesChangesInput = listOf(
-        CubeSideChange(1, 6, NORTH, EAST, false),
-        CubeSideChange(1, 3, SOUTH, SOUTH, false),
-        CubeSideChange(1, 2, EAST, EAST, false),
-        CubeSideChange(1, 4, WEST, EAST, true),
-
-        CubeSideChange(2, 6, NORTH, NORTH, false),
-        CubeSideChange(2, 3, SOUTH, WEST, false),
-        CubeSideChange(2, 1, WEST, WEST, false),
-        CubeSideChange(2, 5, EAST, WEST, true),
-
-        CubeSideChange(3, 1, NORTH, NORTH, false),
-        CubeSideChange(3, 5, SOUTH, SOUTH, false),
-        CubeSideChange(3, 4, WEST, SOUTH, false),
-        CubeSideChange(3, 2, EAST, NORTH, false),
-
-        CubeSideChange(4, 3, NORTH, EAST, false),
-        CubeSideChange(4, 6, SOUTH, SOUTH, false),
-        CubeSideChange(4, 1, WEST, EAST, true),
-        CubeSideChange(4, 5, EAST, EAST, false),
-
-        CubeSideChange(5, 3, NORTH, NORTH, false),
-        CubeSideChange(5, 6, SOUTH, WEST, false),
-        CubeSideChange(5, 4, WEST, WEST, false),
-        CubeSideChange(5, 2, EAST, WEST, true),
-
-        CubeSideChange(6, 4, NORTH, NORTH, false),
-        CubeSideChange(6, 2, SOUTH, SOUTH, false),
-        CubeSideChange(6, 1, WEST, SOUTH, false),
-        CubeSideChange(6, 5, EAST, NORTH, false),
-)
