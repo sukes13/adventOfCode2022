@@ -1,9 +1,11 @@
 package be.fgov.sfpd.kata.aoc22.day22
 
 import be.fgov.sfpd.kata.aoc22.Point
+import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand
+import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand.TurnLeftCommand
+import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand.TurnRightCommand
 import be.fgov.sfpd.kata.aoc22.day22.FacingDirection.*
 import be.fgov.sfpd.kata.aoc22.day22.TileType.*
-import be.fgov.sfpd.kata.aoc22.day22.TurnDirection.*
 import be.fgov.sfpd.kata.aoc22.readFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,10 +16,10 @@ import org.junit.jupiter.params.provider.MethodSource
 class MonkeyMapTest {
     @Test
     fun `parse input to board`() {
-        val board = readFile("day22/exampleInput.txt").toBoard(4)
+        val (board,commands) = readFile("day22/exampleInput.txt").toBoard(4)
 
         assertThat(board.tiles).hasSize(96)
-        assertThat(board.commands).hasSize(13)
+        assertThat(commands).hasSize(13)
         assertThat(board.tiles).containsExactly(BoardTile(Point(x=9, y=1), EMPTY, 1),
                 BoardTile(Point(x=10, y=1),EMPTY, 1),
                 BoardTile(Point(x=11, y=1),EMPTY, 1),
@@ -118,22 +120,21 @@ class MonkeyMapTest {
 
     @ParameterizedTest(name = "Explorer facing:  \"{0}\", now faces: \"{1}\"")
     @MethodSource("testTurning")
-    fun `test turning explorer right`(turning : TurnDirection, start: FacingDirection, result: FacingDirection) {
-            val explorer = Explorer(Point(0, 0), start).turn(turning)
-            assertThat(explorer.facing).isEqualTo(result)
+    fun `test turning explorer right`(turnCommand: TurnCommand, start: FacingDirection, result: FacingDirection) {
+        assertThat(turnCommand.turnFrom(start)).isEqualTo(result)
     }
 
     companion object {
         @JvmStatic
         fun testTurning() = listOf(
-                Arguments.of(RIGHT, NORTH, EAST),
-                Arguments.of(RIGHT, EAST, SOUTH),
-                Arguments.of(RIGHT, SOUTH, WEST),
-                Arguments.of(RIGHT, WEST, NORTH),
-                Arguments.of(LEFT, NORTH, WEST),
-                Arguments.of(LEFT, WEST, SOUTH),
-                Arguments.of(LEFT, SOUTH, EAST),
-                Arguments.of(LEFT, EAST, NORTH),
+                Arguments.of(TurnRightCommand, NORTH, EAST),
+                Arguments.of(TurnRightCommand, EAST, SOUTH),
+                Arguments.of(TurnRightCommand, SOUTH, WEST),
+                Arguments.of(TurnRightCommand, WEST, NORTH),
+                Arguments.of(TurnLeftCommand, NORTH, WEST),
+                Arguments.of(TurnLeftCommand, WEST, SOUTH),
+                Arguments.of(TurnLeftCommand, SOUTH, EAST),
+                Arguments.of(TurnLeftCommand, EAST, NORTH),
         )
     }
 }
