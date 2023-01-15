@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class MonkeyMapTest {
     @Test
     fun `parse input to board`() {
-        val (board,commands) = readFile("day22/exampleInput.txt").toBoard(4)
+        val (board,commands) = readFile("day22/exampleInput.txt").parse(4)
 
         assertThat(board.tiles).hasSize(96)
         assertThat(commands).hasSize(13)

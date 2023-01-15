@@ -5,21 +5,23 @@ import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.MoveCommand
 import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand
 import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand.TurnLeftCommand
 import be.fgov.sfpd.kata.aoc22.day22.BoardCommand.TurnCommand.TurnRightCommand
+import be.fgov.sfpd.kata.aoc22.day22.Explorer.CubeExplorer
+import be.fgov.sfpd.kata.aoc22.day22.Explorer.FlatExplorer
 import be.fgov.sfpd.kata.aoc22.day22.FacingDirection.*
 import be.fgov.sfpd.kata.aoc22.day22.TileType.EMPTY
 import be.fgov.sfpd.kata.aoc22.day22.TileType.WALL
 import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 
 fun part1(input: String, sideSize: Int): Long {
-    val (board, commands) = input.toBoard(sideSize)
+    val (board, commands) = input.parse(sideSize)
 
-    return Explorer.ExplorerFlat(board.startPosition, EAST).tracePath(board, commands, listOf()).password
+    return FlatExplorer(board.startPosition, EAST).tracePath(board, commands, listOf()).password
 }
 
 fun part2(input: String, inputType: Pair<Int, List<CubeSideChange>>): Long {
-    val (board, commands) = input.toBoard(inputType.first)
+    val (board, commands) = input.parse(inputType.first)
 
-    return Explorer.CubeExplorer(board.startPosition, EAST).tracePath(board, commands, inputType.second).password
+    return CubeExplorer(board.startPosition, EAST).tracePath(board, commands, inputType.second).password
 }
 
 
@@ -28,21 +30,21 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
     abstract fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): Explorer
 
     val password: Long = 1000L * position.y + 4 * position.x + facing.score
+    internal fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
+            if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
 
     fun tracePath(board: Board, commands: List<BoardCommand>, cubeSidesChanges: List<CubeSideChange>): Explorer =
-            commands.fold(this) { explorer : Explorer, command ->
-                explorer.execute(command, board,cubeSidesChanges)
+            commands.fold(this) { explorer: Explorer, command ->
+                when (command) {
+                    is TurnCommand -> explorer.turn(command)
+                    is MoveCommand -> explorer.move(command.steps, board, cubeSidesChanges)
+                }
             }
 
-    private fun execute(command: BoardCommand, board: Board, cubeSideChanges: List<CubeSideChange>) = when (command) {
-        is TurnCommand -> turn(command)
-        is MoveCommand -> move(command.steps, board, cubeSideChanges)
-    }
-
-    data class ExplorerFlat(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
+    data class FlatExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
         override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
 
-        override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): ExplorerFlat {
+        override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
             val line = board.tiles.findLineFor(facing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
@@ -115,8 +117,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
                 }
     }
 
-    fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
-            if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
+
 }
 
 
@@ -155,20 +156,21 @@ data class BoardTile(val point: Point, val type: TileType, val sideNr: Int = 0)
 
 data class CubeSideChange(val sideNr: Int, val newSideNr: Int, val oldDirection: FacingDirection, val newDirection: FacingDirection, val flip: Boolean)
 
+enum class TileType { WALL, EMPTY }
+
+enum class FacingDirection(val score: Int) {
+    NORTH(3), EAST(0), SOUTH(1), WEST(2);
+
+    fun isVertical() = this == NORTH || this == SOUTH
+}
+
+
 //Parsing...
-internal fun String.toBoard(sideSize: Int): Pair<Board, List<BoardCommand>> {
+internal fun String.parse(sideSize: Int): Pair<Board, List<BoardCommand>> {
     val (tiles, command) = splitOnEmptyLine()
 
     return Board(
-            tiles = tiles.lines().flatMapIndexed { y, line ->
-                line.mapIndexed { x, char ->
-                    when (char) {
-                        '.' -> BoardTile(Point(x + 1, y + 1), EMPTY)
-                        '#' -> BoardTile(Point(x + 1, y + 1), WALL)
-                        else -> null
-                    }
-                }
-            }.filterNotNull().withCubeSides(sideSize),
+            tiles = tiles.toUnsidedTiles().addCubeSides(sideSize),
             sideSize = sideSize
     ) to command.replace("R", ",R,").replace("L", ",L,").split(",").map {
         when (it) {
@@ -179,41 +181,30 @@ internal fun String.toBoard(sideSize: Int): Pair<Board, List<BoardCommand>> {
     }
 }
 
-
-private fun List<BoardTile>.withCubeSides(sideSize: Int): List<BoardTile> {
-    val topLefts = sideSize.allPossibleTopLefts()
-    var sideNr = 0
-
-    return topLefts.mapNotNull { topLeft ->
-        when {
-            any { it.point == topLeft } -> {
-                sideNr += 1
-                tileOnSide(topLeft, sideSize).map {
-                    it.copy(sideNr = sideNr)
-                }
-            }
-
+private fun String.toUnsidedTiles() = lines().flatMapIndexed { y, line ->
+    line.mapIndexed { x, char ->
+        when (char) {
+            '.' -> BoardTile(Point(x + 1, y + 1), EMPTY)
+            '#' -> BoardTile(Point(x + 1, y + 1), WALL)
             else -> null
         }
+    }
+}.filterNotNull()
+
+private fun List<BoardTile>.addCubeSides(sideSize: Int): List<BoardTile> {
+    val possibleTopLefts = (0..4).flatMap { y ->
+        (0..4).map { x ->
+            Point(x * sideSize + 1, y * sideSize + 1)
+        }
+    }
+    var sideNr = 1
+
+    return possibleTopLefts.mapNotNull { topLeft ->
+        val tilesOnSide = filter { it.point.x in (topLeft.x until topLeft.x + sideSize) && it.point.y in (topLeft.y until topLeft.y + sideSize) }
+        if (tilesOnSide.isNotEmpty())
+            tilesOnSide.map {
+                it.copy(sideNr = sideNr)
+            }.also { sideNr += 1 }
+        else null
     }.flatten()
 }
-
-private fun Int.allPossibleTopLefts() =
-        (0..4).flatMap { y ->
-            (0..4).map { x ->
-                Point(x * this + 1, y * this + 1)
-            }
-        }
-
-
-private fun List<BoardTile>.tileOnSide(topLeft: Point, sideSize: Int) =
-        filter { it.point.x in (topLeft.x until topLeft.x + sideSize) && it.point.y in (topLeft.y until topLeft.y + sideSize) }
-
-enum class TileType { WALL, EMPTY }
-
-enum class FacingDirection(val score: Int) {
-    NORTH(3), EAST(0), SOUTH(1), WEST(2);
-
-    fun isVertical() = this == NORTH || this == SOUTH
-}
-

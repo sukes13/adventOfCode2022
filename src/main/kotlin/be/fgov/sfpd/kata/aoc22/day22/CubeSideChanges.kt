@@ -3,7 +3,7 @@ package be.fgov.sfpd.kata.aoc22.day22
 import be.fgov.sfpd.kata.aoc22.day22.FacingDirection.*
 
 
-val cubeSidesChangesExample = listOf(
+internal val cubeSidesChangesExample = listOf(
         CubeSideChange(1, 2, NORTH, SOUTH, true),
         CubeSideChange(1, 4, SOUTH, SOUTH, false),
         CubeSideChange(1, 6, EAST, WEST, true),
@@ -35,7 +35,7 @@ val cubeSidesChangesExample = listOf(
         CubeSideChange(6, 1, EAST, WEST, false),
 )
 
-val cubeSidesChangesInput = listOf(
+internal val cubeSidesChangesInput = listOf(
         CubeSideChange(1, 6, NORTH, EAST, false),
         CubeSideChange(1, 3, SOUTH, SOUTH, false),
         CubeSideChange(1, 2, EAST, EAST, false),
