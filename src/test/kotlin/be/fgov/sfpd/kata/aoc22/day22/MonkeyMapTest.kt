@@ -121,7 +121,7 @@ class MonkeyMapTest {
     @ParameterizedTest(name = "Explorer facing:  \"{0}\", now faces: \"{1}\"")
     @MethodSource("testTurning")
     fun `test turning explorer right`(turnCommand: TurnCommand, start: FacingDirection, result: FacingDirection) {
-        assertThat(turnCommand.turnFrom(start)).isEqualTo(result)
+        assertThat(turnCommand.turnWhen(start)).isEqualTo(result)
     }
 
     companion object {

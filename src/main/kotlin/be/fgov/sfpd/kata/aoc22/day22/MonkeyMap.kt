@@ -30,8 +30,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
     abstract fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): Explorer
 
     val password: Long = 1000L * position.y + 4 * position.x + facing.score
-    internal fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
-            if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
+
 
     fun tracePath(board: Board, commands: List<BoardCommand>, cubeSidesChanges: List<CubeSideChange>): Explorer =
             commands.fold(this) { explorer: Explorer, command ->
@@ -42,28 +41,31 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
 
     data class FlatExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
+        override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
             val line = board.tiles.findLineFor(facing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
-                val nextTile = when (explorer.facing) {
-                    NORTH -> line.singleOrNull { it.point.y == explorer.position.y - 1 } ?: line.maxBy { it.point.y }
-                    EAST -> line.singleOrNull { it.point.x == explorer.position.x + 1 } ?: line.minBy { it.point.x }
-                    SOUTH -> line.singleOrNull { it.point.y == explorer.position.y + 1 } ?: line.minBy { it.point.y }
-                    WEST -> line.singleOrNull { it.point.x == explorer.position.x - 1 } ?: line.maxBy { it.point.x }
-                }
+                val nextTile = line.nextTileFor(explorer.facing, explorer.position) ?: line.reEnterWhen(explorer.facing)
+
                 when (nextTile.type) {
                     EMPTY -> copy(position = nextTile.point)
                     else -> return explorer
                 }
             }
         }
+
+        private fun List<BoardTile>.reEnterWhen(facing: FacingDirection) = when (facing) {
+            NORTH -> maxBy { it.point.y }
+            EAST -> minBy { it.point.x }
+            SOUTH -> minBy { it.point.y }
+            WEST -> maxBy { it.point.x }
+        }
     }
 
     data class CubeExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
+        override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): CubeExplorer {
             val currentSideNr = board.tiles.single { it.point == position }.sideNr
@@ -72,12 +74,12 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             var currentLine = currentSide.findLineFor(currentFacing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
-                var nextTile = currentLine.nextTileFor(currentFacing, explorer.position)
+                var nextTile = currentLine.nextTileFor(explorer.facing, explorer.position)
 
                 if (nextTile == null) {
                     val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
                     val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
-                    val distFromEdge = currentSide.findDistanceToEdgeFor(currentFacing, explorer.position, sideChange.flip, board.sideSize)
+                    val distFromEdge = currentSide.distanceToEdgeFor(currentFacing, explorer.position, sideChange.flip, board.sideSize)
                     val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distFromEdge)
 
                     currentLine = newSide.findLineFor(sideChange.newDirection, newPosition)
@@ -92,32 +94,31 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
         }
 
-        private fun List<BoardTile>.nextTileFor(currentFacing: FacingDirection, position: Point) =
-                when (currentFacing) {
-                    NORTH -> singleOrNull { it.point.y == position.y - 1 }
-                    EAST -> singleOrNull { it.point.x == position.x + 1 }
-                    SOUTH -> singleOrNull { it.point.y == position.y + 1 }
-                    WEST -> singleOrNull { it.point.x == position.x - 1 }
-                }
-
-        private fun List<BoardTile>.enteringPositionFor(facing: FacingDirection, distFromEdge: Int) =
-                when (facing) {
-                    NORTH -> Point(x = minBy { it.point.x }.point.x + distFromEdge, y = maxBy { it.point.y }.point.y)
-                    EAST -> Point(x = minBy { it.point.x }.point.x, y = minBy { it.point.y }.point.y + distFromEdge)
-                    SOUTH -> Point(x = minBy { it.point.x }.point.x + distFromEdge, y = minBy { it.point.y }.point.y)
-                    WEST -> Point(x = maxBy { it.point.x }.point.x, y = minBy { it.point.y }.point.y + distFromEdge)
-                }
-
-        private fun List<BoardTile>.findDistanceToEdgeFor(facing: FacingDirection, position: Point, needsToFlip: Boolean, sideSize: Int) =
+        private fun List<BoardTile>.distanceToEdgeFor(facing: FacingDirection, position: Point, needsToFlip: Boolean, sideSize: Int) =
                 when {
                     facing.isVertical() -> position.x - minBy { it.point.x }.point.x
                     else -> position.y - minBy { it.point.y }.point.y
                 }.let {
                     if (needsToFlip) sideSize - it - 1 else it
                 }
+
+        private fun List<BoardTile>.enteringPositionFor(facing: FacingDirection, distFromEdge: Int) = when (facing) {
+            NORTH -> Point(x = minBy { it.point.x }.point.x + distFromEdge, y = maxBy { it.point.y }.point.y)
+            EAST -> Point(x = minBy { it.point.x }.point.x, y = minBy { it.point.y }.point.y + distFromEdge)
+            SOUTH -> Point(x = minBy { it.point.x }.point.x + distFromEdge, y = minBy { it.point.y }.point.y)
+            WEST -> Point(x = maxBy { it.point.x }.point.x, y = minBy { it.point.y }.point.y + distFromEdge)
+        }
     }
 
+    internal fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
+            if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
 
+    internal fun List<BoardTile>.nextTileFor(facing: FacingDirection, position: Point) = when (facing) {
+        NORTH -> singleOrNull { it.point.y == position.y - 1 }
+        EAST -> singleOrNull { it.point.x == position.x + 1 }
+        SOUTH -> singleOrNull { it.point.y == position.y + 1 }
+        WEST -> singleOrNull { it.point.x == position.x - 1 }
+    }
 }
 
 
@@ -130,10 +131,10 @@ sealed class BoardCommand {
     data class MoveCommand(val steps: Int) : BoardCommand()
 
     sealed class TurnCommand : BoardCommand() {
-        abstract fun turnFrom(facing: FacingDirection): FacingDirection
+        abstract fun turnWhen(facing: FacingDirection): FacingDirection
 
         object TurnLeftCommand : TurnCommand() {
-            override fun turnFrom(facing: FacingDirection) = when (facing) {
+            override fun turnWhen(facing: FacingDirection) = when (facing) {
                 NORTH -> WEST
                 WEST -> SOUTH
                 SOUTH -> EAST
@@ -142,7 +143,7 @@ sealed class BoardCommand {
         }
 
         object TurnRightCommand : TurnCommand() {
-            override fun turnFrom(facing: FacingDirection) = when (facing) {
+            override fun turnWhen(facing: FacingDirection) = when (facing) {
                 NORTH -> EAST
                 EAST -> SOUTH
                 SOUTH -> WEST
