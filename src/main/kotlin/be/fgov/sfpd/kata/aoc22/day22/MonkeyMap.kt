@@ -39,7 +39,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
 
     data class FlatExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
+        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
             val moveLine = board.tiles.findMoveLineFor(facing, position)
@@ -64,7 +64,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
     }
 
     data class CubeExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
+        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): CubeExplorer {
             val currentSideNr = board.tiles.single { it.point == position }.sideNr
@@ -99,7 +99,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             return newSide to newPosition
         }
 
-        private fun Board.tilesOnSide(currentSideNr: Int) = tiles.filter { it.sideNr == currentSideNr }
+        private fun Board.tilesOnSide(sideNumber: Int) = tiles.filter { it.sideNr == sideNumber }
 
         private fun List<BoardTile>.distanceToEdgeFor(facing: FacingDirection, position: Point, needsToFlip: Boolean, sideSize: Int) =
                 when {
@@ -137,10 +137,10 @@ sealed class BoardCommand {
     data class MoveCommand(val steps: Int) : BoardCommand()
 
     sealed class TurnCommand : BoardCommand() {
-        abstract fun turnWhen(facing: FacingDirection): FacingDirection
+        abstract fun turnFrom(facing: FacingDirection): FacingDirection
 
         object TurnLeftCommand : TurnCommand() {
-            override fun turnWhen(facing: FacingDirection) = when (facing) {
+            override fun turnFrom(facing: FacingDirection) = when (facing) {
                 NORTH -> WEST
                 WEST -> SOUTH
                 SOUTH -> EAST
@@ -149,7 +149,7 @@ sealed class BoardCommand {
         }
 
         object TurnRightCommand : TurnCommand() {
-            override fun turnWhen(facing: FacingDirection) = when (facing) {
+            override fun turnFrom(facing: FacingDirection) = when (facing) {
                 NORTH -> EAST
                 EAST -> SOUTH
                 SOUTH -> WEST
