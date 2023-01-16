@@ -31,7 +31,6 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
 
     val password: Long = 1000L * position.y + 4 * position.x + facing.score
 
-
     fun tracePath(board: Board, commands: List<BoardCommand>, cubeSidesChanges: List<CubeSideChange>): Explorer =
             commands.fold(this) { explorer: Explorer, command ->
                 when (command) {
@@ -47,7 +46,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             val line = board.tiles.findLineFor(facing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
-                val nextTile = line.nextTileFor(explorer.facing, explorer.position) ?: line.reEnterWhen(explorer.facing)
+                val nextTile = line.nextTileOrNull(explorer.facing, explorer.position) ?: line.reEnterAtWhen(explorer.facing)
 
                 when (nextTile.type) {
                     EMPTY -> copy(position = nextTile.point)
@@ -56,7 +55,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
         }
 
-        private fun List<BoardTile>.reEnterWhen(facing: FacingDirection) = when (facing) {
+        private fun List<BoardTile>.reEnterAtWhen(facing: FacingDirection) = when (facing) {
             NORTH -> maxBy { it.point.y }
             EAST -> minBy { it.point.x }
             SOUTH -> minBy { it.point.y }
@@ -73,23 +72,23 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             var currentFacing = facing
             var currentLine = currentSide.findLineFor(currentFacing, position)
 
-            return (1..steps).fold(this) { explorer, _ ->
-                var nextTile = currentLine.nextTileFor(explorer.facing, explorer.position)
+            return (1..steps).fold(this) { movingExplorer, _ ->
+                var nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
 
                 if (nextTile == null) {
                     val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
                     val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
-                    val distFromEdge = currentSide.distanceToEdgeFor(currentFacing, explorer.position, sideChange.flip, board.sideSize)
+                    val distFromEdge = currentSide.distanceToEdgeFor(currentFacing, movingExplorer.position, sideChange.flip, board.sideSize)
                     val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distFromEdge)
 
                     currentLine = newSide.findLineFor(sideChange.newDirection, newPosition)
                     currentFacing = sideChange.newDirection
-                    nextTile = newSide.single { it.point == newPosition }
+                    nextTile = currentLine.single { it.point == newPosition }
                 }
 
                 when (nextTile.type) {
-                    EMPTY -> explorer.copy(position = nextTile.point, facing = currentFacing)
-                    else -> return explorer
+                    EMPTY -> movingExplorer.copy(position = nextTile.point, facing = currentFacing)
+                    else -> return movingExplorer
                 }
             }
         }
@@ -113,14 +112,13 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
     internal fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
             if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
 
-    internal fun List<BoardTile>.nextTileFor(facing: FacingDirection, position: Point) = when (facing) {
+    internal fun List<BoardTile>.nextTileOrNull(facing: FacingDirection, position: Point) = when (facing) {
         NORTH -> singleOrNull { it.point.y == position.y - 1 }
         EAST -> singleOrNull { it.point.x == position.x + 1 }
         SOUTH -> singleOrNull { it.point.y == position.y + 1 }
         WEST -> singleOrNull { it.point.x == position.x - 1 }
     }
 }
-
 
 data class Board(val tiles: List<BoardTile>, val sideSize: Int) {
     val startPosition = tiles.filter { it.point.y == 1 }.minBy { it.point.x }.point
