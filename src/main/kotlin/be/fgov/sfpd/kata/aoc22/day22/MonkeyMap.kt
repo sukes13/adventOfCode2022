@@ -25,7 +25,7 @@ fun part2(input: String, inputType: Pair<Int, List<CubeSideChange>>): Long {
 }
 
 sealed class Explorer(position: Point, facing: FacingDirection) {
-    abstract fun turn(command: TurnCommand): Explorer
+    abstract fun turn(turnCommand: TurnCommand): Explorer
     abstract fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): Explorer
 
     val password: Long = 1000L * position.y + 4 * position.x + facing.score
@@ -39,7 +39,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
 
     data class FlatExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
+        override fun turn(turnCommand: TurnCommand) = copy(facing = turnCommand.turnFrom(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
             val moveLine = board.tiles.findMoveLineFor(facing, position)
@@ -64,19 +64,19 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
     }
 
     data class CubeExplorer(val position: Point, val facing: FacingDirection) : Explorer(position, facing) {
-        override fun turn(command: TurnCommand) = copy(facing = command.turnFrom(facing))
+        override fun turn(turnCommand: TurnCommand) = copy(facing = turnCommand.turnFrom(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): CubeExplorer {
-            val currentSideNr = board.tiles.single { it.point == position }.sideNr
-            val currentSide = board.tilesOnSide(currentSideNr)
+            val sideNumber = board.tiles.single { it.point == position }.sideNr
+            val side = board.tilesOnSide(sideNumber)
             var currentFacing = facing
-            var currentLine = currentSide.findMoveLineFor(currentFacing, position)
+            var currentLine = side.findMoveLineFor(currentFacing, position)
 
             return (1..steps).fold(this) { movingExplorer, _ ->
                 val nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
                         ?: run {
-                            val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
-                            val (newSide, newPosition) = sideChange.stepToNextSide(currentSide, currentFacing, movingExplorer.position, board)
+                            val sideChange = cubeSideChanges.single { it.sideNr == sideNumber && it.oldDirection == currentFacing }
+                            val (newSide, newPosition) = sideChange.stepToNextSide(side, currentFacing, movingExplorer.position, board)
 
                             currentFacing = sideChange.newDirection
                             currentLine = newSide.findMoveLineFor(currentFacing, newPosition)
