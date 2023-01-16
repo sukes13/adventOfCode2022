@@ -68,7 +68,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): CubeExplorer {
             val currentSideNr = board.tiles.single { it.point == position }.sideNr
-            val currentSide = board.tiles.filter { it.sideNr == currentSideNr }
+            val currentSide = board.tilesOnSide(currentSideNr)
             var currentFacing = facing
             var currentLine = currentSide.findLineFor(currentFacing, position)
 
@@ -76,9 +76,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
                 val nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
                         ?: run {
                             val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
-                            val distToEdge = currentSide.distanceToEdgeFor(currentFacing, movingExplorer.position, sideChange.flip, board.sideSize)
-                            val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
-                            val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distToEdge)
+                            val (newSide, newPosition) = sideChange.stepToNextSide(currentSide, currentFacing, movingExplorer.position, board)
 
                             currentFacing = sideChange.newDirection
                             currentLine = newSide.findLineFor(currentFacing, newPosition)
@@ -93,6 +91,15 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
         }
 
+        private fun CubeSideChange.stepToNextSide(currentSide: List<BoardTile>, currentFacing: FacingDirection, currentPosition: Point, board: Board): Pair<List<BoardTile>, Point> {
+            val distToEdge = currentSide.distanceToEdgeFor(currentFacing, currentPosition, flip, board.sideSize)
+            val newSide = board.tilesOnSide(newSideNr)
+            val newPosition = newSide.enteringPositionFor(newDirection, distToEdge)
+
+            return newSide to newPosition
+        }
+
+        private fun Board.tilesOnSide(currentSideNr: Int) = tiles.filter { it.sideNr == currentSideNr }
 
         private fun List<BoardTile>.distanceToEdgeFor(facing: FacingDirection, position: Point, needsToFlip: Boolean, sideSize: Int) =
                 when {
