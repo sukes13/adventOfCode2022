@@ -24,7 +24,6 @@ fun part2(input: String, inputType: Pair<Int, List<CubeSideChange>>): Long {
     return CubeExplorer(board.startPosition, EAST).tracePath(board, commands, inputType.second).password
 }
 
-
 sealed class Explorer(position: Point, facing: FacingDirection) {
     abstract fun turn(command: TurnCommand): Explorer
     abstract fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): Explorer
@@ -43,10 +42,11 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
         override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
-            val line = board.tiles.findLineFor(facing, position)
+            val moveLine = board.tiles.findLineFor(facing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
-                val nextTile = line.nextTileOrNull(explorer.facing, explorer.position) ?: line.reEnterAtWhen(explorer.facing)
+                val nextTile = moveLine.nextTileOrNull(explorer.facing, explorer.position)
+                        ?: moveLine.enteringPositionFor(explorer.facing)
 
                 when (nextTile.type) {
                     EMPTY -> copy(position = nextTile.point)
@@ -55,7 +55,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
         }
 
-        private fun List<BoardTile>.reEnterAtWhen(facing: FacingDirection) = when (facing) {
+        private fun List<BoardTile>.enteringPositionFor(facing: FacingDirection) = when (facing) {
             NORTH -> maxBy { it.point.y }
             EAST -> minBy { it.point.x }
             SOUTH -> minBy { it.point.y }
@@ -73,18 +73,18 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             var currentLine = currentSide.findLineFor(currentFacing, position)
 
             return (1..steps).fold(this) { movingExplorer, _ ->
-                var nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
+                val nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
+                        ?: run {
+                            val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
+                            val distToEdge = currentSide.distanceToEdgeFor(currentFacing, movingExplorer.position, sideChange.flip, board.sideSize)
+                            val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
+                            val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distToEdge)
 
-                if (nextTile == null) {
-                    val sideChange = cubeSideChanges.single { it.sideNr == currentSideNr && it.oldDirection == currentFacing }
-                    val newSide = board.tiles.filter { it.sideNr == sideChange.newSideNr }
-                    val distFromEdge = currentSide.distanceToEdgeFor(currentFacing, movingExplorer.position, sideChange.flip, board.sideSize)
-                    val newPosition = newSide.enteringPositionFor(sideChange.newDirection, distFromEdge)
+                            currentFacing = sideChange.newDirection
+                            currentLine = newSide.findLineFor(currentFacing, newPosition)
 
-                    currentLine = newSide.findLineFor(sideChange.newDirection, newPosition)
-                    currentFacing = sideChange.newDirection
-                    nextTile = currentLine.single { it.point == newPosition }
-                }
+                            currentLine.single { it.point == newPosition }
+                        }
 
                 when (nextTile.type) {
                     EMPTY -> movingExplorer.copy(position = nextTile.point, facing = currentFacing)
@@ -92,6 +92,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
                 }
             }
         }
+
 
         private fun List<BoardTile>.distanceToEdgeFor(facing: FacingDirection, position: Point, needsToFlip: Boolean, sideSize: Int) =
                 when {
@@ -187,8 +188,8 @@ private fun String.toUnsidedTiles() = lines().flatMapIndexed { y, line ->
             '#' -> BoardTile(Point(x + 1, y + 1), WALL)
             else -> null
         }
-    }
-}.filterNotNull()
+    }.filterNotNull()
+}
 
 private fun List<BoardTile>.addCubeSides(sideSize: Int): List<BoardTile> {
     val possibleTopLefts = (0..4).flatMap { y ->
