@@ -42,7 +42,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
         override fun turn(command: TurnCommand) = copy(facing = command.turnWhen(facing))
 
         override fun move(steps: Int, board: Board, cubeSideChanges: List<CubeSideChange>): FlatExplorer {
-            val moveLine = board.tiles.findLineFor(facing, position)
+            val moveLine = board.tiles.findMoveLineFor(facing, position)
 
             return (1..steps).fold(this) { explorer, _ ->
                 val nextTile = moveLine.nextTileOrNull(explorer.facing, explorer.position)
@@ -70,7 +70,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             val currentSideNr = board.tiles.single { it.point == position }.sideNr
             val currentSide = board.tilesOnSide(currentSideNr)
             var currentFacing = facing
-            var currentLine = currentSide.findLineFor(currentFacing, position)
+            var currentLine = currentSide.findMoveLineFor(currentFacing, position)
 
             return (1..steps).fold(this) { movingExplorer, _ ->
                 val nextTile = currentLine.nextTileOrNull(movingExplorer.facing, movingExplorer.position)
@@ -79,7 +79,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
                             val (newSide, newPosition) = sideChange.stepToNextSide(currentSide, currentFacing, movingExplorer.position, board)
 
                             currentFacing = sideChange.newDirection
-                            currentLine = newSide.findLineFor(currentFacing, newPosition)
+                            currentLine = newSide.findMoveLineFor(currentFacing, newPosition)
 
                             currentLine.single { it.point == newPosition }
                         }
@@ -117,7 +117,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
         }
     }
 
-    internal fun List<BoardTile>.findLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
+    internal fun List<BoardTile>.findMoveLineFor(facing: FacingDirection, position: Point): List<BoardTile> =
             if (facing.isVertical()) filter { it.point.x == position.x } else filter { it.point.y == position.y }
 
     internal fun List<BoardTile>.nextTileOrNull(facing: FacingDirection, position: Point) = when (facing) {
