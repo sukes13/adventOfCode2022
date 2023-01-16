@@ -46,7 +46,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
 
             return (1..steps).fold(this) { explorer, _ ->
                 val nextTile = moveLine.nextTileOrNull(explorer.facing, explorer.position)
-                        ?: moveLine.enteringPositionFor(explorer.facing)
+                        ?: moveLine.enteringTileFor(explorer.facing)
 
                 when (nextTile.type) {
                     EMPTY -> copy(position = nextTile.point)
@@ -55,7 +55,7 @@ sealed class Explorer(position: Point, facing: FacingDirection) {
             }
         }
 
-        private fun List<BoardTile>.enteringPositionFor(facing: FacingDirection) = when (facing) {
+        private fun List<BoardTile>.enteringTileFor(facing: FacingDirection) = when (facing) {
             NORTH -> maxBy { it.point.y }
             EAST -> minBy { it.point.x }
             SOUTH -> minBy { it.point.y }
