@@ -13,13 +13,13 @@ class UnstableDiffusionTest {
     @Test
     fun `parse input to SowingElves`() {
         val elves = readFile("day23/exampleInputSmall.txt").toElves()
-        assertThat(elves).contains(SowingElf("21", Point(2, 1)), SowingElf("31", Point(3, 1)))
+        assertThat(elves).contains(Point(2, 1), Point(3, 1))
     }
 
     @Test
     fun `test considerPositions`() {
         val elves = readFile("day23/exampleInputSmall.txt").toElves().considerPositionsStartingFrom(NORTH)
-        assertThat(elves).contains(SowingElf("21", Point(2, 1)) to Point(2, 0), SowingElf("31", Point(3, 1)) to Point(3, 0))
+        assertThat(elves).contains(Point(2, 1) to Point(2, 0), Point(3, 1) to Point(3, 0))
     }
 
     @Test
