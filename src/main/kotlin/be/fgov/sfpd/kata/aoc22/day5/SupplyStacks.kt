@@ -50,7 +50,8 @@ fun Cargo.visualize(): String {
     }.trimEnd()
 }
 
-fun String.toCargo() =
+//parsing...
+internal fun String.toCargo() =
         lines().dropLast(1)
                 .fold(mutableMapOf<Int, List<String>>()) { cargo, line ->
                     line.chunked(4)
@@ -61,7 +62,7 @@ fun String.toCargo() =
                     cargo
                 }.toSortedMap().toMap()
 
-fun String.toCrateMoves() = flatMapLines { moveStr ->
+internal fun String.toCrateMoves() = flatMapLines { moveStr ->
     moveStr.replace("move | from | to ".toRegex(), ",")
             .drop(1)
             .split(",")

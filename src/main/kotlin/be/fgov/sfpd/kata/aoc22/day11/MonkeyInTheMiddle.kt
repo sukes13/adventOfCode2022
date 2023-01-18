@@ -35,7 +35,13 @@ fun Monkeys.doRound(commonModulus: Long, relief: Int): Monkeys {
     return currentMonkeys.toMap()
 }
 
-fun String.toMonkeys() = splitOnEmptyLine().map { monkeyString ->
+data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L)
+data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int){
+    fun throwToMonkeyFor(worry: Long) = if (worry % value == 0L) monkey1 else monkey2
+}
+
+//parsing...
+internal fun String.toMonkeys() = splitOnEmptyLine().map { monkeyString ->
     val id = monkeyString.lines()[0].drop(6).dropLast(1).trim().toInt()
     val items = monkeyString.lines()[1].drop(18).split(", ").map { it.toLong() }
     val operation: (Long) -> Long = monkeyString.lines()[2].toMonkeyOperation()
@@ -57,8 +63,3 @@ private fun String.toMonkeyOperation(): (Long) -> Long = drop(23).split(" ")
                 }
             }
         }
-
-data class Monkey(val id: Int, val items: List<Long>, val operation: (Long) -> Long, val check: MonkeyCheck, val inspections: Long = 0L)
-data class MonkeyCheck(val value: Int, val monkey1: Int, val monkey2: Int){
-    fun throwToMonkeyFor(worry: Long) = if (worry % value == 0L) monkey1 else monkey2
-}

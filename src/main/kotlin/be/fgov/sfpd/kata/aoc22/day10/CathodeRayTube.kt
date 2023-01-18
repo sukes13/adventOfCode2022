@@ -45,11 +45,13 @@ data class CPUState(val cycle: Int = 1, val registerX: Int = 1) {
     fun afterExecuting(crtCommand: CRTCommand) = copy(cycle = cycle + 1, registerX = registerX + crtCommand.value)
 }
 
-fun String.toCRTCommands() = mapLines { line ->
+data class CRTCommand(val name: String, val value: Int = 0)
+
+//parsing...
+internal fun String.toCRTCommands() = mapLines { line ->
     when {
         line.trim().startsWith("noop") -> CRTCommand("noop")
         else -> line.split(" ").let { (command, value) -> CRTCommand(command, value.toInt()) }
     }
 }
 
-data class CRTCommand(val name: String, val value: Int = 0)

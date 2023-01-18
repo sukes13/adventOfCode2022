@@ -50,7 +50,7 @@ data class Cube(val x: Int, val y: Int, val z: Int) {
 
     fun accessibleNeighbours(dijkstraQueue: MutableMap<Cube, Int>) = dijkstraQueue.keys.filter { it in sides() }
 }
-
+//parsing...
 private fun String.toDroplet(): List<Cube> = flatMapLines {
     it.split(",").map(String::toInt).windowed(3).map { (x, y, z) -> Cube(x, y, z) }
 }

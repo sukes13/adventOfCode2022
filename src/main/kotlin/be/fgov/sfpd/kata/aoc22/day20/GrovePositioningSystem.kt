@@ -36,7 +36,8 @@ data class GPSNumber(val id: Int, val value: Long) {
     override fun toString() = "$value"
 }
 
-fun String.toGPSFile() = lines().mapIndexed { index, line ->
+//parsing...
+internal fun String.toGPSFile() = lines().mapIndexed { index, line ->
     GPSNumber(id = index, value = line.toLong())
 }
 

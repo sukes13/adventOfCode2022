@@ -18,8 +18,8 @@ fun List<RopeMove>.executeMoves(rope: Rope) =
 
 private fun List<Rope>.countUniqueTails() = map { it.last() }.also { println(it.visualize(30, 30)) }.distinct().count()
 
-fun Rope.allStepsAfter(move: RopeMove)=
-        (0 until move.distance).fold(mutableListOf(this)) { allSteps,_ ->
+fun Rope.allStepsAfter(move: RopeMove) =
+        (0 until move.distance).fold(mutableListOf(this)) { allSteps, _ ->
             allSteps += allSteps.last().stepTowards(move.direction)
             allSteps
         }.toList()
@@ -63,16 +63,16 @@ private fun Point.follow(head: Point) = when {
 }
 
 data class RopeMove(val direction: Direction, val distance: Int)
-fun String.toRopeMoves() =
-        mapLines {
-            it.trim().split(" ").let { (direction, distance) -> RopeMove(direction.getByLetter(), distance.trim().toInt()) }
-        }
 
-private fun String.getByLetter() =
-        when (this) {
-            "U" -> UP
-            "R" -> RIGHT
-            "D" -> DOWN
-            "L" -> LEFT
-            else -> error("Direction: $this does not exist")
-        }
+//parsing...
+internal fun String.toRopeMoves() = mapLines {
+    it.trim().split(" ").let { (direction, distance) -> RopeMove(direction.getByLetter(), distance.trim().toInt()) }
+}
+
+private fun String.getByLetter() = when (this) {
+    "U" -> UP
+    "R" -> RIGHT
+    "D" -> DOWN
+    "L" -> LEFT
+    else -> error("Direction: $this does not exist")
+}

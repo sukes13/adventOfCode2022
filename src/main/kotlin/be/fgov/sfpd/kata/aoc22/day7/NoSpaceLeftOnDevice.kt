@@ -73,7 +73,8 @@ sealed class FSCommand {
     data class ListCommand(val elements: List<String>) : FSCommand()
 }
 
-fun String.toFSCommands(): List<FSCommand> {
+//parsing...
+internal fun String.toFSCommands(): List<FSCommand> {
     val lines = lines()
     return lines.mapIndexedNotNull { index, line ->
         when {

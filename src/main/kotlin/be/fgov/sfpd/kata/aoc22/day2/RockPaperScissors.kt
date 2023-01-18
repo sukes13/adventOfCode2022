@@ -7,19 +7,6 @@ fun part1(input: String) = input.mapLines { it.toRound() }.sumOf { it.score }
 
 fun part2(input: String) = input.mapLines { it.toPredictedRound() }.sumOf { it.score }
 
-fun String.toRound() =
-        splitOnSpace().let { (opponent, player) ->
-            Round(opponent.asShape(), player.asShape())
-        }
-
-fun String.toPredictedRound() =
-        splitOnSpace().let { (opponent, result) ->
-            Round(
-                    opponentShape = opponent.asShape(),
-                    playerShape = opponent.asShape().counterForResult(result.asRPSResult())
-            )
-        }
-
 data class Round(val opponentShape: Shape, val playerShape: Shape) {
     val score get() = playerShape.value + playerShape.versus(opponentShape).score
 }
@@ -61,3 +48,17 @@ fun String.splitOnSpace(): Pair<String, String> = this.trim().split(" ").zipWith
 
 private fun <T> Array<T>.before(element: T) = this.getOrNull(this.indexOf(element) - 1) ?: this.last()
 private fun <T> Array<T>.after(element: T) = this.getOrNull(this.indexOf(element) + 1) ?: this.first()
+
+//parsing...
+internal fun String.toRound() =
+        splitOnSpace().let { (opponent, player) ->
+            Round(opponent.asShape(), player.asShape())
+        }
+
+internal fun String.toPredictedRound() =
+        splitOnSpace().let { (opponent, result) ->
+            Round(
+                    opponentShape = opponent.asShape(),
+                    playerShape = opponent.asShape().counterForResult(result.asRPSResult())
+            )
+        }

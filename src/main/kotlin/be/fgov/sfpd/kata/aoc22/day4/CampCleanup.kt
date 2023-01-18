@@ -9,7 +9,8 @@ fun part2(input: String) = input.filterLines { it.toSweeps().overlap().isNotEmpt
 
 private fun List<Set<Int>>.isFullyContaining() = overlap().let { overlap -> this.any { it == overlap } }
 
-fun String.toSweeps() = split(",").map {
+//parsing...
+internal fun String.toSweeps() = split(",").map {
     it.split("-").map(String::toInt).let { (first, last) -> (first..last).toSet() }
 }
 

@@ -153,7 +153,8 @@ sealed class RockShape {
     )) : RockShape()
 }
 
-fun String.toJetPattern(): List<GasJet> = this.map {
+//parsing...
+internal fun String.toJetPattern(): List<GasJet> = map {
     when (it) {
         '<' -> LEFT
         '>' -> RIGHT

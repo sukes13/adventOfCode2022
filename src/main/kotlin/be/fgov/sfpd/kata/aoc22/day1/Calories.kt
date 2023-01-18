@@ -7,7 +7,8 @@ fun part1(input: String) = input.caloriesPerElf().max()
 
 fun part2(input: String) = input.caloriesPerElf().sortedDescending().take(3).sum()
 
-fun String.caloriesPerElf() =
+//parsing...
+internal fun String.caloriesPerElf() =
         splitOnEmptyLine().map { perElf ->
             perElf.mapLines { it.toInt() }.sumOf { it }
         }

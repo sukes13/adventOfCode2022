@@ -63,7 +63,8 @@ private fun List<BeaconSensor>.allRangesOn(line: Int): List<IntRange> =
 
 data class BeaconSensor(val point: Point, val beacon: Point, val range: Int)
 
-fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { line ->
+//parsing...
+internal fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { line ->
     line.substringAfter("Sensor at x=").trim().split(": closest beacon is at x=")
             .flatMap {
                 it.split(", y=").windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }

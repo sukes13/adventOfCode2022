@@ -53,8 +53,7 @@ fun Cave.addUnitOfSand(dropPoint: Point, bottom: Int): Cave {
     return toMutableMap().plus(sand to SAND).toMap()
 }
 
-
-fun Cave.visualize(): String {
+internal fun Cave.visualize(): String {
     val minX = keys.minBy { it.x }.x
     val maxX = keys.maxBy { it.x }.x
     val maxY = keys.maxBy { it.y }.y
@@ -64,15 +63,6 @@ fun Cave.visualize(): String {
         }.joinToString("")
     }
 }
-
-fun String.toCave(): Cave = flatMapLines { it.toRockLine() }.associateWith { ROCK }
-
-fun String.toRockLine(): List<Point> =
-        split(" -> ").windowed(2, 1).flatMap { (start, end) ->
-            start.splitToPoint() lineTo end.splitToPoint()
-        }
-
-fun String.splitToPoint() = split(",").windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }.single()
 
 object CavePoints {
     infix fun Point.lineTo(end: Point) = if (x == end.x) verticalLineTo(end) else horizontalLineTo(end)
@@ -100,3 +90,13 @@ enum class Filler(private val sign: String) {
 
     override fun toString() = sign
 }
+
+//parsing...
+internal fun String.toCave(): Cave = flatMapLines { it.toRockLine() }.associateWith { ROCK }
+
+fun String.toRockLine(): List<Point> =
+        split(" -> ").windowed(2, 1).flatMap { (start, end) ->
+            start.splitToPoint() lineTo end.splitToPoint()
+        }
+
+fun String.splitToPoint() = split(",").windowed(2).map { (x, y) -> Point(x.toInt(), y.toInt()) }.single()
