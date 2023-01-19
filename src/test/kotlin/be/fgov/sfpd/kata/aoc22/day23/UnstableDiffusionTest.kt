@@ -20,7 +20,7 @@ class UnstableDiffusionTest {
     @Test
     fun `test considerPositions`() {
         val elves = readFile("day23/exampleInputSmall.txt").toElves().considerPositionsStartingFrom(NORTH)
-        assertThat(elves).contains(Point(2, 1) to Point(2, 0), Point(3, 1) to Point(3, 0))
+        assertThat(elves).containsAllEntriesOf(listOf( Point(2, 1) to Point(2, 0), Point(3, 1) to Point(3, 0)).toMap())
     }
 
     @Test

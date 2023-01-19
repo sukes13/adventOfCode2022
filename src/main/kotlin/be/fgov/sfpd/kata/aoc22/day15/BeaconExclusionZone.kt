@@ -72,7 +72,3 @@ internal fun String.toBeaconSensors(): List<BeaconSensor> = flatMapLines { line 
                 BeaconSensor(point = sensor, beacon = beacon, range = (sensor.x - beacon.x).absoluteValue + (sensor.y - beacon.y).absoluteValue)
             }
 }
-
-//fun IntRange.mapParallel(f: suspend (Int) -> Point?): List<Point> = runBlocking {
-//    map { async(Dispatchers.Default) { f(it) } }.mapNotNull { it.await() }
-//}

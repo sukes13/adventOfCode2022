@@ -7,8 +7,8 @@ import be.fgov.sfpd.kata.aoc22.splitOnEmptyLine
 
 fun part1(input: String): Int {
     val checks = input.splitOnEmptyLine().map { pairOfPackets ->
-        val packets = pairOfPackets.mapLines { it.toPacket() }.windowed(2).map { (first, second) -> first to second }.first()
-        packets.first.comesBefore(packets.second)
+        val (packetOne, packetTwo ) = pairOfPackets.mapLines { it.toPacket() }.windowed(2).map { (first, second) -> first to second }.first()
+        packetOne.comesBefore(packetTwo)
     }
 
     return checks.mapIndexed { index, check -> if (check == 1) index + 1 else 0 }.sum()
@@ -36,18 +36,23 @@ sealed class PacketValue {
                     packet1 == null -> {
                         match = 1.also { println("-> in order because: left ran out first") }
                     }
+
                     packet2 == null -> {
                         match = (-1).also { println("-> NOT in order because: right ran out first") }
                     }
+
                     packet1 is ArrayPacketValue && packet2 is ArrayPacketValue -> {
                         match += packet1.comesBefore(packet2)
                     }
+
                     packet1 is IntPacketValue && packet2 is ArrayPacketValue -> {
                         match += ArrayPacketValue(listOf(packet1)).comesBefore(packet2)
                     }
+
                     packet2 is IntPacketValue && packet1 is ArrayPacketValue -> {
                         match += packet1.comesBefore(ArrayPacketValue(listOf(packet2)))
                     }
+
                     packet1 is IntPacketValue && packet2 is IntPacketValue -> {
                         when {
                             packet1 < packet2 -> match = 1.also { println("-> in order because: $packet1 < $packet2") }
@@ -61,8 +66,7 @@ sealed class PacketValue {
         }
 
         override fun toString() = "[${values.joinToString(",")}]"
-        fun add(other: PacketValue) = add(listOf(other))
-        fun add(other: List<PacketValue>) = copy(values = values.toMutableList() + other)
+        fun add(other: PacketValue) = copy(values = values.toMutableList() + listOf(other))
 
     }
 
@@ -89,7 +93,7 @@ internal fun String.toPacketValue(): ArrayPacketValue {
 
             stringToCheck.first().isDigit() -> {
                 val allValuesString = stringToCheck.substringBefore('[').substringBefore(']')
-                packet = packet.add(allValuesString.toIntPackages())
+                packet = packet.copy(values = packet.values.toMutableList() + allValuesString.toIntPackages())
                 stringToCheck = stringToCheck.drop(allValuesString.length)
             }
 
@@ -106,8 +110,8 @@ private fun String.findNextArrayContent(): String {
     var content = substringBefore(']')
     (0..6).forEach { _ ->
         content = run {
-            val dept = content.count { it == '[' }
-            this.positionOfCloserFor(dept)?.let { correctedCloser ->
+            val depth = content.count { it == '[' }
+            this.positionOfCloserFor(depth)?.let { correctedCloser ->
                 this.take(correctedCloser)
             } ?: content.drop(1)
         }
