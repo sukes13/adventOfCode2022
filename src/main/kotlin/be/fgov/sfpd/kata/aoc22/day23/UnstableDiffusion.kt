@@ -13,21 +13,21 @@ fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE).second
 
 internal fun List<Point>.spreadOut(totalRounds: Int): Pair<List<Point>, Int> {
     var direction = NORTH
-    var result = this
+    var elves = this
     var round = 1
 
     while (round <= totalRounds) {
         println("Round nr: $round at ${LocalDateTime.now()}")
 
-        result = result.moveRoundIfPossibleOrNull(direction)
+        elves = elves.moveRoundIfPossibleOrNull(direction)
                 ?.also {
                     direction = direction.next()
                     round += 1
                 }
-                ?: return result to round
+                ?: return elves to round
     }
 
-    return result to round
+    return elves to round
 }
 
 fun List<Point>.moveRoundIfPossibleOrNull(direction: Direction): List<Point>? {
@@ -35,12 +35,13 @@ fun List<Point>.moveRoundIfPossibleOrNull(direction: Direction): List<Point>? {
 
     val elves = this.toMutableList()
     var moveCount = 0
-    proposals.forEach { (elf, newPosition) ->
-        if (proposals.count { it.second == newPosition } <= 1) {
-            elves.remove(elf)
-            elves.add(newPosition)
-            moveCount = +1
-        }
+
+    proposals.filter { proposal ->
+        proposals.count { proposal.second == it.second } <= 1
+    }.forEach { (elf, newPosition) ->
+        elves.remove(elf)
+        elves.add(newPosition)
+        moveCount += 1
     }
 
     return if (moveCount == 0) null else elves
@@ -70,13 +71,6 @@ private fun Point.stepTo(direction: Direction) = when (direction) {
     EAST -> this + Point(1, 0)
 }
 
-enum class Direction {
-    NORTH, SOUTH, WEST, EAST;
-
-    fun next() = values()[(ordinal + 1) % values().size]
-    fun startFrom() = values().drop(ordinal) + values().take(ordinal)
-}
-
 private fun Point.neighboursToThe(direction: Direction) = when (direction) {
     NORTH -> listOf(Point(-1, -1), Point(0, -1), Point(1, -1))
     SOUTH -> listOf(Point(-1, 1), Point(0, 1), Point(1, 1))
@@ -103,6 +97,12 @@ internal fun List<Point>.visualize(): String {
 private fun List<Point>.width() = maxBy { it.x }.x - minBy { it.x }.x + 1
 private fun List<Point>.height() = maxBy { it.y }.y - minBy { it.y }.y + 1
 
+enum class Direction {
+    NORTH, SOUTH, WEST, EAST;
+
+    fun next() = values()[(ordinal + 1) % values().size]
+    fun startFrom() = values().drop(ordinal) + values().take(ordinal)
+}
 
 //Parsing...
 internal fun String.toElves() = lines().flatMapIndexed { y, line ->
