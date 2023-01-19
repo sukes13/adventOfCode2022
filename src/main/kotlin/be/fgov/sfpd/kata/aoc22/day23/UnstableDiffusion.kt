@@ -17,7 +17,7 @@ fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE).second
 internal fun List<Point>.spreadOut(totalRounds: Int, direction: Direction = NORTH, round: Int = 1): Pair<List<Point>, Int> {
     if (round > totalRounds) return this to round
 
-    if(round % 50 ==0) println("Round nr: $round at ${LocalDateTime.now()}")
+    if (round % 50 == 0) println("Round nr: $round at ${LocalDateTime.now()}")
 
     return moveIfPossibleOrNullFrom(direction)?.spreadOut(totalRounds, direction.next(), round + 1) ?: (this to round)
 }
@@ -27,13 +27,12 @@ internal fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Po
     var moveCount = 0
 
     considerPositionsStartingFrom(direction).also { proposals ->
-        proposals.filter { proposal ->
-            proposals.count { proposal.second == it.second } <= 1
-        }.forEach { (elf, newPosition) ->
-            elves.remove(elf)
-            elves.add(newPosition)
-            moveCount += 1
-        }
+        proposals.filterNot { it.hasDuplicateIn(proposals) }
+                .forEach { (elf, newPosition) ->
+                    elves.remove(elf)
+                    elves.add(newPosition)
+                    moveCount += 1
+                }
     }
 
     return if (moveCount == 0) null else elves
@@ -43,11 +42,7 @@ internal fun List<Point>.considerPositionsStartingFrom(direction: Direction) = m
     if (elf.neighbours.any { it in this }) proposalFor(elf, direction) else null
 }
 
-private fun List<Point>.mapParallel(func: (Point) -> Pair<Point,Point>?) = runBlocking {
-    map { async(Dispatchers.Default) { func(it) } }.mapNotNull { it.await() }
-}
-
-private fun List<Point>.proposalFor(elf: Point, startDirection: Direction): Pair<Point,Point>? {
+private fun List<Point>.proposalFor(elf: Point, startDirection: Direction): Pair<Point, Point>? {
     startDirection.allDirectionsFrom().forEach { direction ->
         if (elf.neighboursToThe(direction).none { it in this }) {
             return elf to elf.stepTo(direction)
@@ -55,6 +50,12 @@ private fun List<Point>.proposalFor(elf: Point, startDirection: Direction): Pair
     }
     return null
 }
+
+private fun List<Point>.mapParallel(func: (Point) -> Pair<Point, Point>?) = runBlocking {
+    map { async(Dispatchers.Default) { func(it) } }.mapNotNull { it.await() }
+}
+
+private fun Pair<Point, Point>.hasDuplicateIn(proposals: List<Pair<Point, Point>>) = proposals.count { second == it.second } > 1
 
 private fun Point.stepTo(direction: Direction) = when (direction) {
     NORTH -> this + Point(0, -1)
