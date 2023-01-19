@@ -35,7 +35,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test first round small`() {
-        val elves = readFile("day23/exampleInputSmall.txt").toElves().moveRoundIfPossibleOrNull(NORTH)
+        val elves = readFile("day23/exampleInputSmall.txt").toElves().moveIfPossibleOrNullFrom(NORTH)
 
         assertThat(elves?.visualize()).isEqualTo("""##
 ..
@@ -46,7 +46,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut small`() {
-        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut(10)
+        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut(10, NORTH)
 
         assertThat(elves.first.visualize()).isEqualTo("""..#..
 ....#
@@ -58,7 +58,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test first round bigger`() {
-        val elves = readFile("day23/exampleInput.txt").toElves().moveRoundIfPossibleOrNull(NORTH)
+        val elves = readFile("day23/exampleInput.txt").toElves().moveIfPossibleOrNullFrom(NORTH)
 
         assertThat(elves?.visualize()).isEqualTo(""".....#...
 ...#...#.
@@ -73,7 +73,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut bigger`() {
-        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut(10)
+        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut(10, NORTH)
 
         assertThat(elves.first.visualize()).isEqualTo("""......#.....
 ..........#.

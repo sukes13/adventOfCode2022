@@ -5,32 +5,21 @@ import be.fgov.sfpd.kata.aoc22.day23.Direction.*
 import java.time.LocalDateTime
 
 
-fun part1(input: String) = input.toElves().spreadOut(10).let { (elves, _) ->
+fun part1(input: String) = input.toElves().spreadOut(10, NORTH).let { (elves, _) ->
     (elves.width() * elves.height()) - elves.size
 }
 
-fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE).second
+fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE, NORTH).second
 
-internal fun List<Point>.spreadOut(totalRounds: Int): Pair<List<Point>, Int> {
-    var direction = NORTH
-    var elves = this
-    var round = 1
+internal fun List<Point>.spreadOut(totalRounds: Int, direction: Direction, round : Int = 1): Pair<List<Point>, Int> {
+    if( round > totalRounds) return this to round
 
-    while (round <= totalRounds) {
-        println("Round nr: $round at ${LocalDateTime.now()}")
+    println("Round nr: $round at ${LocalDateTime.now()}")
 
-        elves = elves.moveRoundIfPossibleOrNull(direction)
-                ?.also {
-                    direction = direction.next()
-                    round += 1
-                }
-                ?: return elves to round
-    }
-
-    return elves to round
+    return moveIfPossibleOrNullFrom(direction)?.spreadOut(totalRounds, direction.next(), round + 1) ?: (this to round)
 }
 
-fun List<Point>.moveRoundIfPossibleOrNull(direction: Direction): List<Point>? {
+fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Point>? {
     val proposals = considerPositionsStartingFrom(direction)
 
     val elves = this.toMutableList()
