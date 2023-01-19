@@ -46,7 +46,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut small`() {
-        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut(10, NORTH)
+        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut(10)
 
         assertThat(elves.first.visualize()).isEqualTo("""..#..
 ....#
@@ -73,7 +73,7 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut bigger`() {
-        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut(10, NORTH)
+        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut(10)
 
         assertThat(elves.first.visualize()).isEqualTo("""......#.....
 ..........#.

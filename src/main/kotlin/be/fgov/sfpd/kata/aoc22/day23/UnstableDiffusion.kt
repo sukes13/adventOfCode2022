@@ -2,46 +2,53 @@ package be.fgov.sfpd.kata.aoc22.day23
 
 import be.fgov.sfpd.kata.aoc22.Point
 import be.fgov.sfpd.kata.aoc22.day23.Direction.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 
 
-fun part1(input: String) = input.toElves().spreadOut(10, NORTH).let { (elves, _) ->
+fun part1(input: String) = input.toElves().spreadOut(10).let { (elves, _) ->
     (elves.width() * elves.height()) - elves.size
 }
 
-fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE, NORTH).second
+fun part2(input: String) = input.toElves().spreadOut(Int.MAX_VALUE).second
 
-internal fun List<Point>.spreadOut(totalRounds: Int, direction: Direction, round : Int = 1): Pair<List<Point>, Int> {
-    if( round > totalRounds) return this to round
+internal fun List<Point>.spreadOut(totalRounds: Int, direction: Direction = NORTH, round: Int = 1): Pair<List<Point>, Int> {
+    if (round > totalRounds) return this to round
 
-    println("Round nr: $round at ${LocalDateTime.now()}")
+    if(round % 50 ==0) println("Round nr: $round at ${LocalDateTime.now()}")
 
     return moveIfPossibleOrNullFrom(direction)?.spreadOut(totalRounds, direction.next(), round + 1) ?: (this to round)
 }
 
 fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Point>? {
-    val proposals = considerPositionsStartingFrom(direction)
-
     val elves = this.toMutableList()
     var moveCount = 0
 
-    proposals.filter { proposal ->
-        proposals.count { proposal.second == it.second } <= 1
-    }.forEach { (elf, newPosition) ->
-        elves.remove(elf)
-        elves.add(newPosition)
-        moveCount += 1
+    considerPositionsStartingFrom(direction).also { proposals ->
+        proposals.filter { proposal ->
+            proposals.count { proposal.second == it.second } <= 1
+        }.forEach { (elf, newPosition) ->
+            elves.remove(elf)
+            elves.add(newPosition)
+            moveCount += 1
+        }
     }
 
     return if (moveCount == 0) null else elves
 }
 
-fun List<Point>.considerPositionsStartingFrom(direction: Direction) = mapNotNull { elf ->
+fun List<Point>.considerPositionsStartingFrom(direction: Direction) = mapParallel { elf ->
     if (elf.neighbours.any { it in this }) {
         proposedPositionFor(elf, direction)?.let {
             elf to it
         }
     } else null
+}
+
+private fun List<Point>.mapParallel(func: (Point) -> Pair<Point,Point>?) = runBlocking {
+    map { async(Dispatchers.Default) { func(it) } }.mapNotNull { it.await() }
 }
 
 private fun List<Point>.proposedPositionFor(elf: Point, startDirection: Direction): Point? {
