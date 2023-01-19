@@ -22,7 +22,7 @@ internal fun List<Point>.spreadOut(totalRounds: Int, direction: Direction = NORT
     return moveIfPossibleOrNullFrom(direction)?.spreadOut(totalRounds, direction.next(), round + 1) ?: (this to round)
 }
 
-fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Point>? {
+internal fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Point>? {
     val elves = this.toMutableList()
     var moveCount = 0
 
@@ -39,22 +39,18 @@ fun List<Point>.moveIfPossibleOrNullFrom(direction: Direction): List<Point>? {
     return if (moveCount == 0) null else elves
 }
 
-fun List<Point>.considerPositionsStartingFrom(direction: Direction) = mapParallel { elf ->
-    if (elf.neighbours.any { it in this }) {
-        proposedPositionFor(elf, direction)?.let {
-            elf to it
-        }
-    } else null
+internal fun List<Point>.considerPositionsStartingFrom(direction: Direction) = mapParallel { elf ->
+    if (elf.neighbours.any { it in this }) proposalFor(elf, direction) else null
 }
 
 private fun List<Point>.mapParallel(func: (Point) -> Pair<Point,Point>?) = runBlocking {
     map { async(Dispatchers.Default) { func(it) } }.mapNotNull { it.await() }
 }
 
-private fun List<Point>.proposedPositionFor(elf: Point, startDirection: Direction): Point? {
-    startDirection.startFrom().forEach { direction ->
+private fun List<Point>.proposalFor(elf: Point, startDirection: Direction): Pair<Point,Point>? {
+    startDirection.allDirectionsFrom().forEach { direction ->
         if (elf.neighboursToThe(direction).none { it in this }) {
-            return elf.stepTo(direction)
+            return elf to elf.stepTo(direction)
         }
     }
     return null
@@ -97,7 +93,7 @@ enum class Direction {
     NORTH, SOUTH, WEST, EAST;
 
     fun next() = values()[(ordinal + 1) % values().size]
-    fun startFrom() = values().drop(ordinal) + values().take(ordinal)
+    fun allDirectionsFrom() = values().drop(ordinal) + values().take(ordinal)
 }
 
 //Parsing...

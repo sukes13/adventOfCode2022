@@ -91,7 +91,7 @@ class UnstableDiffusionTest {
     @ParameterizedTest(name = "Direction:  \"{0}\", startingFrom: \"{1}\"")
     @MethodSource("testDirectionNext")
     fun `test startFrom resorting`(start: Direction, result: List<Direction>) {
-        assertThat(start.startFrom()).containsExactly(*result.toTypedArray())
+        assertThat(start.allDirectionsFrom()).containsExactly(*result.toTypedArray())
     }
 
     companion object {
