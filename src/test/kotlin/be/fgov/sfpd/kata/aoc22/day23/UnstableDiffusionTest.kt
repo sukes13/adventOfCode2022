@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class UnstableDiffusionTest {
+
     @Test
     fun `parse input to SowingElves`() {
         val elves = readFile("day23/exampleInputSmall.txt").toElves()
@@ -45,9 +46,9 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut small`() {
-        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut()
+        val elves = readFile("day23/exampleInputSmall.txt").toElves().spreadOut(10)
 
-        assertThat(elves.visualize()).isEqualTo("""..#..
+        assertThat(elves.first.visualize()).isEqualTo("""..#..
 ....#
 #....
 ....#
@@ -72,9 +73,9 @@ class UnstableDiffusionTest {
 
     @Test
     fun `test spreadOut bigger`() {
-        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut()
+        val elves = readFile("day23/exampleInput.txt").toElves().spreadOut(10)
 
-        assertThat(elves.visualize()).isEqualTo("""......#.....
+        assertThat(elves.first.visualize()).isEqualTo("""......#.....
 ..........#.
 .#.#..#.....
 .....#......
